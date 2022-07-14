@@ -37,7 +37,7 @@
     "axios": "^0.21.2",
     "ptn-helpers": "^0.0.13",
     "roam-client": "^1.90",
-    "roamjs-components": "^0.59",
+    "roamjs-components": "^0.67.1",
     "util": "^0.12.4"
   }
 }

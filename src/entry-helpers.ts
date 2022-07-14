@@ -1,5 +1,5 @@
 import { getTreeByPageName } from "roam-client";
-import { getSettingValueFromTree } from "roamjs-components";
+import getSettingValueFromTree from "roamjs-components/util/getSettingValueFromTree";
 import { inputTypes } from "./configure";
 import { CONFIG, HASHTAG_KEY, PARENT_BLOCK_KEY } from "./constants";
 

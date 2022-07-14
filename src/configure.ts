@@ -1,7 +1,6 @@
-import {
-  createConfigObserver,
-  getSettingValueFromTree,
-} from "roamjs-components";
+import { createConfigObserver } from "roamjs-components/components/ConfigPage";
+import getSettingValueFromTree from "roamjs-components/util/getSettingValueFromTree";
+
 import {
   CONFIG,
   DEFAULT_HASHTAG,
