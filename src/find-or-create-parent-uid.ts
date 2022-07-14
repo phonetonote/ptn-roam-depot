@@ -48,7 +48,7 @@ export const findOrCreateParentUid = (
   }
 
   // if not, create it
-  const node = { text: parentBlock, children: [] };
+  const node: RoamNode = { text: parentBlock, children: [] };
   return createBlock({
     node,
     parentUid: results()[0][0]["uid"],

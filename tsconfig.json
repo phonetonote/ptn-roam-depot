@@ -1,22 +1,5 @@
 {
-  "compilerOptions": {
-    "outDir": "./build/",
-    "noImplicitAny": true,
-    "allowSyntheticDefaultImports": true,
-    "moduleResolution": "node",
-    "module": "esnext",
-    "target": "es2019",
-    "esModuleInterop": true,
-    "allowJs": true,
-    "jsx": "react-jsx",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "skipLibCheck": true,
-    "strict": true,
-    "forceConsistentCasingInFileNames": true,
-    "noFallthroughCasesInSwitch": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true
-  },
-  "include": ["src", "local-app-env.d.ts"]
+  "extends": "./node_modules/roamjs-scripts/dist/default.tsconfig.json",
+  "include": ["src"],
+  "exclude": ["node_modules"]
 }

@@ -2,6 +2,8 @@
 // import { configure, configValues } from "../configure";
 // import Bugsnag from "@bugsnag/js";
 
+import { runExtension } from "roamjs-components";
+
 // Bugsnag.start({ apiKey: "0ca67498b27bd9e3fba038f7fb0cd0b4" });
 
 // if (roamKey) {
@@ -19,20 +21,12 @@
 
 // window.setInterval(() => fetchNotes(), 1000 * 60);
 
-export default {
-  onload: () => {
+export default runExtension({
+  extensionId: "ptn-roam-depot",
+  run: () => {
     console.log("ptn log onload");
   },
-  onunload: () => {
+  unload: () => {
     console.log("ptn log onunload");
   },
-};
-
-// export default {
-//   onload: () => {
-//     console.log("ptn-roam-depot loaded");
-//   },
-//   onunload: () => {
-//     console.log("ptn-roam-depot unloaded");
-//   },
-// };
+});
