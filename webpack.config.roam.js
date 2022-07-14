@@ -20,13 +20,17 @@ module.exports = {
     rules: [
       {
         test: /\.ts$/,
-        loader: "ts-loader",
-        exclude: /node_modules/,
-        options: {
-          compilerOptions: {
-            noEmit: false,
+        use: [
+          {
+            loader: "ts-loader",
+            options: {
+              compilerOptions: {
+                noEmit: false,
+              },
+            },
           },
-        },
+        ],
+        exclude: /node_modules/,
       },
     ],
   },

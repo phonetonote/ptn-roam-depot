@@ -72,17 +72,17 @@ export const fetchNotes = async () => {
                   block: { string: "", uid: smartBlockId },
                 });
 
-                window.roamjs?.extension.smartblocks.triggerSmartblock({
+                window.roamjs?.extension?.smartblocks?.triggerSmartblock({
                   srcName: smartblockTemplate,
                   targetUid: smartBlockId,
                   variables: {
-                    feedItem: feedItem,
                     rawText: feedItem.content_text,
                     hashtag: hashtag,
                     senderType: senderType,
-                    attachmentText: feedItem.attachments
-                      ?.map((attachment) => attachment.title)
-                      .join(", "),
+                    attachmentText:
+                      feedItem.attachments
+                        ?.map((attachment) => attachment.title)
+                        .join(", ") || "",
                   },
                 });
               } else {
