@@ -15,8 +15,7 @@ import { reduceFeedItems } from "./reduce-messages";
 import { startingOrder } from "./starting-order";
 import { configValues } from "./configure";
 import { itemToNode, FeedItem } from "ptn-helpers";
-
-export const roamKey = document.getElementById(SCRIPT_ID)?.dataset.roam_key;
+import { roamKey } from "./index-pages";
 
 export const fetchNotes = async () => {
   axios(`${SERVER_URL}/feed.json?roam_key=${roamKey}`)

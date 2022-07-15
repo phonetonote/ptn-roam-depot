@@ -1,59 +1,35 @@
-/*
-object-assign
-(c) Sindre Sorhus
-@license MIT
-*/
-
 /*!
- * The buffer module from node.js, for the browser.
- *
- * @author   Feross Aboukhadijeh <http://feross.org>
- * @license  MIT
- */
-
-/*!
- * UAParser.js v0.7.18
- * Lightweight JavaScript-based User-Agent string parser
- * https://github.com/faisalman/ua-parser-js
- *
- * Copyright © 2012-2016 Faisal Salman <fyzlman@gmail.com>
- * Dual licensed under GPLv2 or MIT
- */
-
-/*!
- * XRegExp 5.1.0
+ * XRegExp 5.0.1
  * <xregexp.com>
  * Steven Levithan (c) 2007-present MIT License
  */
 
 /*!
- * XRegExp Unicode Base 5.1.0
+ * XRegExp Unicode Base 5.0.1
  * <xregexp.com>
  * Steven Levithan (c) 2008-present MIT License
  */
 
 /*!
- * XRegExp Unicode Categories 5.1.0
+ * XRegExp Unicode Categories 5.0.1
  * <xregexp.com>
  * Steven Levithan (c) 2010-present MIT License
  * Unicode data by Mathias Bynens <mathiasbynens.be>
  */
 
 /*!
- * XRegExp Unicode Properties 5.1.0
+ * XRegExp Unicode Properties 5.0.1
  * <xregexp.com>
  * Steven Levithan (c) 2012-present MIT License
  * Unicode data by Mathias Bynens <mathiasbynens.be>
  */
 
 /*!
- * XRegExp Unicode Scripts 5.1.0
+ * XRegExp Unicode Scripts 5.0.1
  * <xregexp.com>
  * Steven Levithan (c) 2010-present MIT License
  * Unicode data by Mathias Bynens <mathiasbynens.be>
  */
-
-/*! https://mths.be/punycode v1.3.2 by @mathias */
 
 /**
  * Prism: Lightweight, robust, elegant syntax highlighting
@@ -62,13 +38,4 @@ object-assign
  * @author Lea Verou <https://lea.verou.me>
  * @namespace
  * @public
- */
-
-/** @license React v17.0.2
- * react-dom-server.browser.production.min.js
- *
- * Copyright (c) Facebook, Inc. and its affiliates.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
  */
