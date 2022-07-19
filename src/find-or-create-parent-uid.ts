@@ -1,9 +1,5 @@
 import { toRoamDate, toRoamDateUid } from "roam-client";
-
-type RoamNode = {
-  text: string;
-  children: RoamNode[];
-};
+import { RoamNode } from "./types";
 
 export const findOrCreateParentUid = (
   date: Date,

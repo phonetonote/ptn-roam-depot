@@ -7,24 +7,25 @@ import {
   InputTextNode,
 } from "roam-client";
 import Bugsnag from "@bugsnag/js";
-import {
-  parentBlockFromSenderType,
-  hashtagFromSenderType,
-} from "./entry-helpers";
 import { reduceFeedItems } from "./reduce-messages";
 import { startingOrder } from "./starting-order";
-import { configValues } from "./configure";
 import { itemToNode, FeedItem } from "ptn-helpers";
-import { roamKey } from "./index-pages";
+import { InputType, PTNSettings } from "./types";
 
-export const fetchNotes = async () => {
-  axios(`${SERVER_URL}/feed.json?roam_key=${roamKey}`)
+export const fetchNotes = async (
+  ptnKey: string,
+  roamId: string,
+  settings: PTNSettings | undefined
+) => {
+  console.log("fetchNotes settings", settings);
+  const { smartblockTemplate, hashtag: hashtagFromSetting } = settings || {};
+  axios(`${SERVER_URL}/feed.json?roam_key=${ptnKey}`)
     .then(async (res) => {
       const feedItems: FeedItem[] = res.data["items"];
       for (var i = 0; i < feedItems.length; i++) {
         const feedItem: FeedItem = feedItems[i];
         await axios.patch(
-          `${SERVER_URL}/feed/${feedItem.id}.json?roam_key=${roamKey}`,
+          `${SERVER_URL}/feed/${feedItem.id}.json?roam_key=${ptnKey}&roam_id=${roamId}&sender_source=roam_depot`,
           { status: "syncing" }
         );
       }
@@ -32,18 +33,21 @@ export const fetchNotes = async () => {
       const messageMap = feedItems.reduce(reduceFeedItems, {});
 
       for (const pageName of Object.keys(messageMap)) {
-        for (const senderType of Object.keys(messageMap[pageName])) {
+        for (const senderType of Object.keys(
+          messageMap[pageName]
+        ) as InputType[]) {
           const feedItems: FeedItem[] = messageMap[pageName][senderType];
           const date = new Date(feedItems[0].date_published),
             parentUid = findOrCreateParentUid(
               date,
-              parentBlockFromSenderType(senderType),
+              settings[`${senderType}ParentBlock`] ||
+                settings?.parentBlockTitle,
               window.roamAlphaAPI,
               createBlock
             );
           for (const [i, feedItem] of feedItems.entries()) {
             const hashtag =
-              hashtagFromSenderType(senderType) || configValues.hashtag;
+              settings[`${senderType}Hashtag`] || hashtagFromSetting;
             const node: InputTextNode = itemToNode(feedItem, hashtag);
 
             const existingBlock =
@@ -51,14 +55,11 @@ export const fetchNotes = async () => {
 
             if (!node.uid || !existingBlock) {
               const hasSmartBlockTemplate =
-                configValues.smartblockTemplate &&
-                configValues.smartblockTemplate.length > 0;
+                smartblockTemplate && smartblockTemplate.length > 0;
 
               const orderOffset = hasSmartBlockTemplate ? i * 2 : i;
 
               if (hasSmartBlockTemplate) {
-                const { smartblockTemplate } = configValues;
-
                 let smartBlockId = window.roamAlphaAPI.util.generateUID();
                 window.roamAlphaAPI.createBlock({
                   location: {
@@ -95,7 +96,7 @@ export const fetchNotes = async () => {
             }
 
             await axios.patch(
-              `${SERVER_URL}/feed/${feedItem.id}.json?roam_key=${roamKey}`,
+              `${SERVER_URL}/feed/${feedItem.id}.json?roam_key=${ptnKey}`,
               { status: "synced" }
             );
           }

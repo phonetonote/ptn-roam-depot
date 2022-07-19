@@ -1,127 +1,321 @@
-// import { fetchNotes, roamKey } from "../fetch-notes";
-// import { configure, configValues } from "../configure";
-// import Bugsnag from "@bugsnag/js";
+import Bugsnag from "@bugsnag/js";
 import React from "react";
 import ReactDOM from "react-dom";
-import { roamKey } from "./index-pages";
+import getCurrentUserEmail from "roamjs-components/queries/getCurrentUserEmail";
+import getCurrentUserUid from "roamjs-components/queries/getCurrentUserUid";
+import {
+  HASHTAG_KEY,
+  PARENT_BLOCK_KEY,
+  SCRIPT_ID,
+  SETTINGS_CONFIG,
+  inputTypes,
+} from "./constants";
+import { fetchNotes } from "./fetch-notes";
+import {
+  GetPtnKeyFn,
+  OnboardingStatus,
+  RoamExtentionAPI,
+  PTNSettings,
+  SetSettingFn,
+} from "./types";
 
 const ROOT_ID = "ptn-roam-depot-root";
+const SHARED_HEADERS = { "Content-Type": "application/json" };
+const PTN_ROOT = "https://app.phonetonote.com";
+const scriptData = document.getElementById(SCRIPT_ID)?.dataset;
+const ptnKeyFromScript = scriptData?.ptn_key || scriptData?.roam_key;
 
-type PTNStatus =
-  | "WAITING"
-  | "TIME_TO_LOOK_FOR_EXISTING_PTN_KEY"
-  | "TIME_TO_MAYBE_SEND_PTN_KEY_TO_BACKEND";
+const updateExistingCustomer = async (ptnKey: string) => {
+  await fetch(`${PTN_ROOT}/customers/update`, {
+    method: "POST",
+    mode: "cors",
+    headers: { ...SHARED_HEADERS, "x-ptn-key": ptnKey },
+  });
+};
 
-type GetSettingFn = (key: string) => string | undefined;
-type SetSettingFn = (key: string, value: string) => void;
+const getSignInToken = async (ptnKey: string): Promise<string> => {
+  return fetch(`${PTN_ROOT}/customers/sign_in_token.json`, {
+    method: "POST",
+    mode: "cors",
+    headers: { ...SHARED_HEADERS, "x-ptn-key": ptnKey },
+  })
+    .then((res) => res.json())
+    .then((res) => res.token)
+    .catch(() => undefined);
+};
 
-type RoamExtentionAPI = {
-  extensionAPI: {
-    settings: {
-      get: GetSettingFn;
-      set: (key: string, value: string) => void;
-      getAll: () => { [key: string]: string };
-      panel: {
-        create: (config: any) => void;
-      };
-    };
-  };
+const cleanHashtag = (hashtag: string): string => {
+  if (hashtag.indexOf("#") === 0) {
+    return hashtag.substring(1);
+  }
+
+  return hashtag;
 };
 
 const Singleton = (props: {
-  getSettingFn: GetSettingFn;
-  setSettingFn: SetSettingFn;
+  getPtnKeyFromSettings: GetPtnKeyFn;
+  setSettingFunc: SetSettingFn;
+  createSettings: (config: any) => void;
+  existingSettings: { [key: string]: any };
 }) => {
-  const { setSettingFn, getSettingFn } = props;
-  const [count, setCount] = React.useState(0);
+  console.log("existingSettings", props.existingSettings);
 
-  const [status, setStatus] = React.useState<PTNStatus>("WAITING");
+  const {
+    getPtnKeyFromSettings,
+    setSettingFunc,
+    createSettings,
+    existingSettings,
+  } = props;
+
+  const [onboardingStatus, setOnboardingStatus] =
+    React.useState<OnboardingStatus>("START");
+
   const [ptnKey, setPtnKey] = React.useState<string>();
-
-  React.useEffect(() => {
-    const existingPtnKeyFromSettings = getSettingFn("ptnKey");
-    console.log("existingPtnKeyFromSettings", existingPtnKeyFromSettings);
-    setStatus("TIME_TO_LOOK_FOR_EXISTING_PTN_KEY");
-  }, []);
-
-  React.useEffect(() => {
-    if (status === "TIME_TO_LOOK_FOR_EXISTING_PTN_KEY") {
-      console.log("TIME_TO_LOOK_FOR_EXISTING_PTN_KEY");
-
-      const existingPtnKeyFromScript = roamKey;
-
-      setSettingFn("ptnKey", existingPtnKeyFromScript);
-      setPtnKey(existingPtnKeyFromScript);
-
-      setStatus("TIME_TO_MAYBE_SEND_PTN_KEY_TO_BACKEND");
-    }
-  }, [status]);
-
-  return (
-    <div>
-      <h1>Hello, clicked the button {count} times</h1>
-      <button onClick={() => setCount(count + 1)}>Click me</button>
-    </div>
+  const [signInToken, setSignInToken] = React.useState<string>();
+  const [settings, setSettings] = React.useState<PTNSettings>(
+    existingSettings as PTNSettings
   );
-};
 
-const panelConfig = {
-  tabTitle: "phonetonote",
-  settings: [
-    {
-      name: "ptn key",
-      id: "ptnKey",
-      description: "your ptn key, used to tie your phonetonote account to roam",
-      action: {
-        type: "input",
-        placeholder: "...",
+  const panelConfig = {
+    tabTitle: "phonetonote",
+    settings: [
+      {
+        ...SETTINGS_CONFIG["ptnKey"],
+        action: {
+          type: "input",
+          onChange: (event: React.FormEvent<HTMLInputElement>) => {
+            setPtnKey(event.currentTarget.value);
+          },
+        },
       },
-    },
-  ],
+      {
+        ...SETTINGS_CONFIG["showDashLink"],
+        action: {
+          type: "switch",
+          onChange: (event: React.FormEvent<HTMLInputElement>) => {
+            setSettings({
+              ...settings,
+              showDashLink: event.currentTarget.checked,
+            });
+          },
+        },
+      },
+      {
+        ...SETTINGS_CONFIG["smartblockTemplate"],
+        action: {
+          type: "input",
+          onChange: (event: React.FormEvent<HTMLInputElement>) => {
+            setSettings({
+              ...settings,
+              smartblockTemplate: event.currentTarget.value,
+            });
+          },
+        },
+      },
+      {
+        ...SETTINGS_CONFIG[HASHTAG_KEY],
+        action: {
+          type: "input",
+          onChange: (event: React.FormEvent<HTMLInputElement>) => {
+            setSettings({
+              ...settings,
+              [HASHTAG_KEY]: cleanHashtag(event.currentTarget.value),
+            });
+          },
+        },
+      },
+      {
+        ...SETTINGS_CONFIG[PARENT_BLOCK_KEY],
+        action: {
+          type: "input",
+          onChange: (event: React.FormEvent<HTMLInputElement>) => {
+            setSettings({
+              ...settings,
+              [PARENT_BLOCK_KEY]: event.currentTarget.value,
+            });
+          },
+        },
+      },
+      ...inputTypes.map((inputType) => {
+        const id = `${inputType}Hashtag`;
+        return {
+          name: `${inputType} hashtag`,
+          type: "text",
+          description: `hashtag for messages sent via ${inputType}, will over ride global hashtag setting.`,
+          id,
+          action: {
+            type: "input",
+            onChange: (event: React.FormEvent<HTMLInputElement>) => {
+              setSettings({
+                ...settings,
+                [id]: event.currentTarget.value,
+              });
+            },
+          },
+        };
+      }),
+      ...inputTypes.map((inputType) => {
+        const id = `${inputType}ParentBlock`;
+
+        return {
+          name: `${inputType} parent block`,
+          type: "text",
+          description: `name of the parent block for messages sent via ${inputType}, will over ride global parent block title setting.`,
+          id,
+          action: {
+            type: "input",
+            onChange: (event: React.FormEvent<HTMLInputElement>) => {
+              setSettings({
+                ...settings,
+                [id]: event.currentTarget.value,
+              });
+            },
+          },
+        };
+      }),
+    ],
+  };
+
+  const createUserAndSetPtnKey = async (email: string, roam_id: string) => {
+    const headers = { ...SHARED_HEADERS };
+
+    try {
+      const response = await fetch("https://app.phonetonote.com/clerk/create", {
+        method: "POST",
+        mode: "cors",
+        headers,
+        body: JSON.stringify({ email, roam_id }),
+      });
+
+      const json: { ptnKey: string | undefined } = await response.json();
+      const newPtnKey = json["ptnKey"];
+
+      if (newPtnKey) {
+        setPtnKey(newPtnKey);
+        setSettingFunc("ptnKey", newPtnKey);
+        setOnboardingStatus("END");
+      } else {
+        throw new Error("No ptnKey returned from server");
+      }
+    } catch (e) {
+      console.log("Error creating new user:", e);
+    }
+  };
+
+  const fetchFromDailyNotes = (e: any) => {
+    const roamId = getCurrentUserUid();
+    if (e?.target?.innerText?.toUpperCase() === "DAILY NOTES") {
+      fetchNotes(ptnKey, roamId, settings);
+    }
+  };
+
+  const setSignInTokenAsync = async (ptnKey: string) => {
+    if (ptnKey) {
+      const newSignInToken = await getSignInToken(ptnKey);
+      if (newSignInToken) {
+        setSignInToken(newSignInToken);
+      }
+    }
+  };
+
+  React.useEffect(() => {
+    setSignInTokenAsync(ptnKey);
+  }, [ptnKey]);
+
+  React.useEffect(() => {
+    const currentUserUid = getCurrentUserUid();
+
+    if (onboardingStatus === "START") {
+      createSettings(panelConfig);
+      setSettingFunc("onboardingStatus", "END");
+
+      const existingPtnKeyFromSettings = getPtnKeyFromSettings();
+      if (existingPtnKeyFromSettings) {
+        setPtnKey(existingPtnKeyFromSettings);
+        setOnboardingStatus("END");
+      } else {
+        setSettingFunc(HASHTAG_KEY, "ptn");
+        setSettingFunc(PARENT_BLOCK_KEY, "mobile notes");
+        setSettingFunc("showDashLink", true);
+
+        const existingPtnKeyFromScript = ptnKeyFromScript;
+        if (existingPtnKeyFromScript) {
+          setSettingFunc("ptnKey", existingPtnKeyFromScript);
+          updateExistingCustomer(existingPtnKeyFromScript);
+          setPtnKey(existingPtnKeyFromScript);
+          setOnboardingStatus("END");
+        } else {
+          const currentUserEmail = getCurrentUserEmail();
+          createUserAndSetPtnKey(currentUserEmail, currentUserUid);
+        }
+      }
+    } else if (onboardingStatus === "END") {
+      if (!ptnKey) {
+        alert("error getting ptnKey, please contact support@phonetonote.com");
+      } else {
+        Bugsnag.start({ apiKey: "0ca67498b27bd9e3fba038f7fb0cd0b4" });
+        Bugsnag.setUser(ptnKey, undefined, undefined);
+        fetchNotes(ptnKey, currentUserUid, settings);
+
+        document.addEventListener("click", fetchFromDailyNotes);
+
+        const intervalId = window.setInterval(
+          () => fetchNotes(ptnKey, currentUserUid, settings),
+          1000 * 60
+        );
+
+        return () => {
+          document.removeEventListener("click", fetchFromDailyNotes);
+          window.clearInterval(intervalId);
+        };
+      }
+    }
+  }, [onboardingStatus]);
+
+  return signInToken ? (
+    settings?.showDashLink ? (
+      <a
+        href={`https://dashboard.phonetonote.com/welcome?token=${signInToken}`}
+        className="log-button"
+        target={"_blank"}
+      >
+        <span className="bp3-icon bp3-icon-mobile-phone icon"></span>
+        ptn dash ↗
+      </a>
+    ) : (
+      <> </>
+    )
+  ) : (
+    <span style={{ color: "white", marginLeft: "20px" }}>ptn is loading</span>
+  );
 };
 
 export default {
   onload: ({ extensionAPI }: RoamExtentionAPI) => {
-    console.log("ptn log onload");
-    console.log(extensionAPI);
-    extensionAPI.settings.panel.create(panelConfig);
     const container = document.getElementsByClassName(
       "roam-sidebar-content"
     )[0];
-    const ptnRoot = document.createElement("span");
+    const ptnRoot = document.createElement("div");
     ptnRoot.id = `${ROOT_ID}`;
-    container.insertBefore(ptnRoot, container.firstChild);
+
+    const existingButtons = container.getElementsByClassName("log-button");
+    const lastExistingButton = existingButtons[existingButtons.length - 1];
+    container.insertBefore(ptnRoot, lastExistingButton);
+
     ReactDOM.render(
       <Singleton
-        getSettingFn={extensionAPI.settings.get}
-        setSettingFn={extensionAPI.settings.set}
+        getPtnKeyFromSettings={() => extensionAPI.settings.get("ptnKey")}
+        setSettingFunc={extensionAPI.settings.set}
+        createSettings={extensionAPI.settings.panel.create}
+        existingSettings={extensionAPI.settings.getAll()}
       />,
       ptnRoot
     );
-    // Bugsnag.start({ apiKey: "0ca67498b27bd9e3fba038f7fb0cd0b4" });
-
-    // if (roamKey) {
-    //   Bugsnag.setUser(roamKey, undefined, undefined);
-    // }
-
-    // configure();
-    // fetchNotes();
-
-    // document.addEventListener("click", (e: any) => {
-    //   if (e?.target?.innerText?.toUpperCase() === "DAILY NOTES") {
-    //     fetchNotes();
-    //   }
-    // });
-
-    // window.setInterval(() => fetchNotes(), 1000 * 60);
   },
   onunload: () => {
     const ptnRoot = document.getElementById(ROOT_ID);
-    console.log("ptnRoot", ptnRoot);
     ReactDOM.unmountComponentAtNode(ptnRoot);
     ptnRoot.remove();
-
-    console.log("ptn log onunload");
   },
 };
 
