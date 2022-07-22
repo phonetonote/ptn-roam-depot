@@ -10,3 +10,5 @@ coverage
 .DS_Store
 extension.js
 main.js
+extension.js.LICENSE.txt
+main.js.LICENSE.txt

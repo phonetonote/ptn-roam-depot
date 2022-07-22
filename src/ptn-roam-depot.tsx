@@ -55,22 +55,23 @@ const Singleton = (props: {
   getPtnKeyFromSettings: GetPtnKeyFn;
   setSettingFunc: SetSettingFn;
   createSettings: (config: any) => void;
-  existingSettings: { [key: string]: any };
+  existingSettingsFunc: () => { [key: string]: any };
 }) => {
   const {
     getPtnKeyFromSettings,
     setSettingFunc,
     createSettings,
-    existingSettings,
+    existingSettingsFunc,
   } = props;
 
+  const initialSettings = { ...existingSettingsFunc() };
   const [onboardingStatus, setOnboardingStatus] =
     React.useState<OnboardingStatus>("START");
 
   const [ptnKey, setPtnKey] = React.useState<string>();
   const [signInToken, setSignInToken] = React.useState<string>();
   const [settings, setSettings] = React.useState<PTNSettings>(
-    existingSettings as PTNSettings
+    initialSettings as PTNSettings
   );
 
   const panelConfig = {
@@ -267,7 +268,7 @@ const Singleton = (props: {
   }, [onboardingStatus, settings]);
 
   return signInToken ? (
-    settings?.showDashLink ? (
+    Object.keys(settings).length === 0 || settings?.showDashLink ? (
       <a
         href={`https://dashboard.phonetonote.com/welcome?token=${signInToken}`}
         className="log-button"
@@ -301,7 +302,7 @@ export default {
         getPtnKeyFromSettings={() => extensionAPI.settings.get("ptnKey")}
         setSettingFunc={extensionAPI.settings.set}
         createSettings={extensionAPI.settings.panel.create}
-        existingSettings={extensionAPI.settings.getAll()}
+        existingSettingsFunc={extensionAPI.settings.getAll}
       />,
       ptnRoot
     );
