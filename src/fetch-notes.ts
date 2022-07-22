@@ -16,7 +16,6 @@ export const fetchNotes = async (
   roamId: string,
   settings: PTNSettings | undefined
 ) => {
-  console.log("fetchNotes settings", settings);
   const { smartblockTemplate, hashtag: hashtagFromSetting } = settings || {};
   axios(`${SERVER_URL}/feed.json?roam_key=${ptnKey}`)
     .then(async (res) => {

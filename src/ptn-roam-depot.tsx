@@ -57,8 +57,6 @@ const Singleton = (props: {
   createSettings: (config: any) => void;
   existingSettings: { [key: string]: any };
 }) => {
-  console.log("existingSettings", props.existingSettings);
-
   const {
     getPtnKeyFromSettings,
     setSettingFunc,
@@ -226,7 +224,6 @@ const Singleton = (props: {
 
     if (onboardingStatus === "START") {
       createSettings(panelConfig);
-      setSettingFunc("onboardingStatus", "END");
 
       const existingPtnKeyFromSettings = getPtnKeyFromSettings();
       if (existingPtnKeyFromSettings) {
@@ -267,7 +264,7 @@ const Singleton = (props: {
         };
       }
     }
-  }, [onboardingStatus]);
+  }, [onboardingStatus, settings]);
 
   return signInToken ? (
     settings?.showDashLink ? (
@@ -315,15 +312,3 @@ export default {
     ptnRoot.remove();
   },
 };
-
-// #TODO move to this once it works
-// export default runExtension({
-//   roamMarketplace: true,
-//   extensionId: "ptn-roam-depot",
-//   run: () => {
-//     console.log("ptn log onload");
-//   },
-//   unload: () => {
-//     console.log("ptn log onunload");
-//   },
-// });
