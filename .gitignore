@@ -8,3 +8,5 @@ out
 coverage
 .vscode
 .DS_Store
+extension.js
+main.js
