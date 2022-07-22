@@ -6,7 +6,6 @@ import {
   getCreateTimeByBlockUid,
   InputTextNode,
 } from "roam-client";
-import Bugsnag from "@bugsnag/js";
 import { reduceFeedItems } from "./reduce-messages";
 import { startingOrder } from "./starting-order";
 import { itemToNode, FeedItem } from "ptn-helpers";
@@ -104,7 +103,6 @@ export const fetchNotes = async (
       }
     })
     .catch((e) => {
-      console.log("phonetoroam error", e);
-      Bugsnag.notify(e);
+      console.log("ptn error", e);
     });
 };

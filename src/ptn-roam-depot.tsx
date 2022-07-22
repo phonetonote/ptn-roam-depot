@@ -1,4 +1,3 @@
-import Bugsnag from "@bugsnag/js";
 import React from "react";
 import ReactDOM from "react-dom";
 import getCurrentUserEmail from "roamjs-components/queries/getCurrentUserEmail";
@@ -253,8 +252,6 @@ const Singleton = (props: {
       if (!ptnKey) {
         alert("error getting ptnKey, please contact support@phonetonote.com");
       } else {
-        Bugsnag.start({ apiKey: "0ca67498b27bd9e3fba038f7fb0cd0b4" });
-        Bugsnag.setUser(ptnKey, undefined, undefined);
         fetchNotes(ptnKey, currentUserUid, settings);
 
         document.addEventListener("click", fetchFromDailyNotes);
