@@ -1,15 +1,15 @@
 import axios from "axios";
 import { SCRIPT_ID, SERVER_URL } from "./constants";
 import { findOrCreateParentUid } from "./find-or-create-parent-uid";
-import {
-  createBlock,
-  getCreateTimeByBlockUid,
-  InputTextNode,
-} from "roam-client";
+
+import createBlock from "roamjs-components/writes/createBlock";
+import getCreateTimeByBlockUid from "roamjs-components/queries/getCreateTimeByBlockUid";
+
 import { reduceFeedItems } from "./reduce-messages";
 import { startingOrder } from "./starting-order";
 import { itemToNode, FeedItem } from "ptn-helpers";
 import { InputType, PTNSettings } from "./types";
+import { InputTextNode } from "roamjs-components/types";
 
 export const fetchNotes = async (
   ptnKey: string,
@@ -37,7 +37,7 @@ export const fetchNotes = async (
         ) as InputType[]) {
           const feedItems: FeedItem[] = messageMap[pageName][senderType];
           const date = new Date(feedItems[0].date_published),
-            parentUid = findOrCreateParentUid(
+            parentUid = await findOrCreateParentUid(
               date,
               settings[`${senderType}ParentBlock`] ||
                 settings?.parentBlockTitle,

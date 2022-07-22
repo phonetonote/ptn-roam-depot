@@ -12,10 +12,10 @@ import {
 import { fetchNotes } from "./fetch-notes";
 import {
   GetPtnKeyFn,
-  OnboardingStatus,
-  RoamExtentionAPI,
-  PTNSettings,
   SetSettingFn,
+  OnboardingStatus,
+  PTNSettings,
+  RoamExtentionAPI,
 } from "./types";
 
 const ROOT_ID = "ptn-roam-depot-root";

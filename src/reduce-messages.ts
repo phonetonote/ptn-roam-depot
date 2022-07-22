@@ -1,5 +1,8 @@
-import { toRoamDate } from "roam-client";
+import format from "date-fns/format";
 import { FeedItem } from "ptn-helpers";
+
+const toRoamDate = (d: Date) =>
+  isNaN(d.valueOf()) ? "" : format(d, "MMMM do, yyyy");
 
 export const reduceFeedItems = (
   obj: Record<string, Record<string, FeedItem[]>>,

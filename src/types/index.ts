@@ -1,4 +1,4 @@
-import { HASHTAG_KEY, PARENT_BLOCK_KEY } from "./constants";
+import { HASHTAG_KEY, PARENT_BLOCK_KEY } from "../constants";
 
 export type OnboardingStatus = "START" | "END";
 

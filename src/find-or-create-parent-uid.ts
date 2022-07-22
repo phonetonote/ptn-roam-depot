@@ -1,7 +1,6 @@
-import { toRoamDate, toRoamDateUid } from "roam-client";
 import { RoamNode } from "./types";
 
-export const findOrCreateParentUid = (
+export const findOrCreateParentUid = async (
   date: Date,
   parentBlock: String | undefined,
   roamAPI: any,
@@ -9,10 +8,10 @@ export const findOrCreateParentUid = (
     node: RoamNode;
     parentUid: string;
     order: number;
-  }) => string
-): string => {
-  const pageName = toRoamDate(date),
-    roamUid = toRoamDateUid(date),
+  }) => Promise<string>
+): Promise<string> => {
+  const pageName = window.roamAlphaAPI.util.dateToPageTitle(date),
+    roamUid = window.roamAlphaAPI.util.dateToPageUid(date),
     results = () =>
       roamAPI.q(
         `[:find (pull ?e [* {:block/children [*]}]) :where [?e :node/title "${pageName}"]]`
@@ -45,12 +44,9 @@ export const findOrCreateParentUid = (
 
   // if not, create it
   const node: RoamNode = { text: parentBlock, children: [] };
-  return createBlock({
+  return await createBlock({
     node,
     parentUid: results()[0][0]["uid"],
     order: children.length,
   });
 };
-
-export const testableToRoamDate = toRoamDate;
-export const testableToRoamDateUid = toRoamDateUid;
