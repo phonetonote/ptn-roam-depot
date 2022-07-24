@@ -73,6 +73,7 @@ const Singleton = (props: {
   const [settings, setSettings] = React.useState<PTNSettings>(
     initialSettings as PTNSettings
   );
+  const [clerkIdFromRoam, setClerkIdFromRoam] = React.useState<string>();
 
   const panelConfig = {
     tabTitle: "phonetonote",
@@ -185,11 +186,15 @@ const Singleton = (props: {
         body: JSON.stringify({ email, roam_id }),
       });
 
-      const json: { ptnKey: string | undefined } = await response.json();
-      const newPtnKey = json["ptnKey"];
+      const {
+        ptnKey: newPtnKey,
+        clerkId: newClerkId,
+      }: { ptnKey: string | undefined; clerkId: string | undefined } =
+        await response.json();
 
-      if (newPtnKey) {
+      if (newPtnKey && newClerkId) {
         setPtnKey(newPtnKey);
+        setClerkIdFromRoam(newClerkId);
         setSettingFunc("ptnKey", newPtnKey);
         setOnboardingStatus("END");
       } else {
@@ -267,10 +272,10 @@ const Singleton = (props: {
     }
   }, [onboardingStatus, settings]);
 
-  return signInToken ? (
+  return signInToken && clerkIdFromRoam ? (
     Object.keys(settings).length === 0 || settings?.showDashLink ? (
       <a
-        href={`https://dashboard.phonetonote.com/welcome?token=${signInToken}`}
+        href={`https://dashboard.phonetonote.com/welcome?token=${signInToken}&clerkIdFromRoam=${clerkIdFromRoam}`}
         className="log-button"
         target={"_blank"}
       >
