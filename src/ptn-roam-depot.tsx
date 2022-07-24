@@ -272,10 +272,12 @@ const Singleton = (props: {
     }
   }, [onboardingStatus, settings]);
 
-  return signInToken && clerkIdFromRoam ? (
+  return signInToken ? (
     Object.keys(settings).length === 0 || settings?.showDashLink ? (
       <a
-        href={`https://dashboard.phonetonote.com/welcome?token=${signInToken}&clerkIdFromRoam=${clerkIdFromRoam}`}
+        href={`https://dashboard.phonetonote.com/welcome?token=${signInToken}&clerkIdFromRoam=${
+          clerkIdFromRoam || "null"
+        }`}
         className="log-button"
         target={"_blank"}
       >
