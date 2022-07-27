@@ -229,6 +229,7 @@ const Singleton = (props: {
     const currentUserUid = getCurrentUserUid();
 
     if (onboardingStatus === "START") {
+      setOnboardingStatus("IN_PROGRESS");
       createSettings(panelConfig);
 
       const existingPtnKeyFromSettings = getPtnKeyFromSettings();

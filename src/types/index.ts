@@ -1,6 +1,6 @@
 import { HASHTAG_KEY, PARENT_BLOCK_KEY } from "../constants";
 
-export type OnboardingStatus = "START" | "END";
+export type OnboardingStatus = "START" | "IN_PROGRESS" | "END";
 
 export type GetPtnKeyFn = () => string | undefined;
 export type SetSettingFn = (key: string, value: any) => void;
