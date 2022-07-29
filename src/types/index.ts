@@ -1,8 +1,8 @@
 import { HASHTAG_KEY, PARENT_BLOCK_KEY } from "../constants";
 
-export type OnboardingStatus = "START" | "IN_PROGRESS" | "END";
+export type OnboardingStatus = "START" | "END";
 
-export type GetPtnKeyFn = () => string | undefined;
+export type GetKeyFn = (key: string) => string | undefined;
 export type SetSettingFn = (key: string, value: any) => void;
 
 export type RoamExtentionAPI = {
@@ -46,6 +46,11 @@ export type PTNSettings = {
 
   showDashLink: boolean;
 };
+
+export type PTNDefaultSettings =
+  | typeof HASHTAG_KEY
+  | typeof PARENT_BLOCK_KEY
+  | "showDashLink";
 
 export type RoamNode = {
   text: string;

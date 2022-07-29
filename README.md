@@ -18,6 +18,12 @@ from your dashboard, you can configure your account, and add your phone number.
 
 you can access the dashboard outside of roam by logging into https://dashboard.phonetonote.com/ with your roam email. we do not use any passwords. you will be sent a verification code to your email when logging in.
 
+## fetching new notes
+
+new notes will be pulled into your graph automatically when you open or refresh roam, and every 90 seconds after.
+
+you can trigger a manual sync by _clicking the Daily Notes link_ in the roam nav.
+
 ## roam depot discount
 
 phonetonote's standard plan is normally $5/month, but it is free through roam depot. pro customers also receive a $5/month discount after installation.
