@@ -2,46 +2,37 @@ import React from "react";
 import ReactDOM from "react-dom";
 import getCurrentUserEmail from "roamjs-components/queries/getCurrentUserEmail";
 import getCurrentUserUid from "roamjs-components/queries/getCurrentUserUid";
+import { render as renderOnboardingAlert } from "./components/onboarding-alert";
+import { useDebounce } from "@react-hook/debounce";
 import {
   HASHTAG_KEY,
   PARENT_BLOCK_KEY,
   SCRIPT_ID,
   SETTINGS_CONFIG,
   inputTypes,
+  BRING_YOUR_OWN_PTN_KEY,
+  DEFAULT_SETTINGS,
+  PTN_ROOT,
+  ROOT_ID,
+  SHARED_HEADERS,
+  SHARED_FETCH_PARAMS,
 } from "./constants";
 import { fetchNotes } from "./fetch-notes";
-import {
-  GetKeyFn,
-  SetSettingFn,
-  PTNSettings,
-  RoamExtentionAPI,
-  PTNDefaultSettings,
-} from "./types";
-
-const ROOT_ID = "ptn-roam-depot-root";
-const SHARED_HEADERS = { "Content-Type": "application/json" };
-const PTN_ROOT = "https://app.phonetonote.com";
-const DEFAULT_SETTINGS: Pick<PTNSettings, PTNDefaultSettings> = {
-  [HASHTAG_KEY]: "ptn",
-  [PARENT_BLOCK_KEY]: "mobile notes",
-  ["showDashLink"]: true,
-};
+import { PTNSettings, RoamExtentionAPI, SingletonProps } from "./types";
+import { Intent, Spinner, SpinnerSize } from "@blueprintjs/core";
 
 const scriptData = document.getElementById(SCRIPT_ID)?.dataset;
 const ptnKeyFromScript = scriptData?.ptn_key || scriptData?.roam_key;
 
-const updateExistingCustomer = async (ptnKey: string) => {
+const updateExistingCustomer = async (ptnKey: string) =>
   await fetch(`${PTN_ROOT}/customers/update`, {
-    method: "POST",
-    mode: "cors",
+    ...SHARED_FETCH_PARAMS,
     headers: { ...SHARED_HEADERS, "x-ptn-key": ptnKey },
   });
-};
 
-const getSignInToken = async (ptnKey: string): Promise<string> => {
-  return fetch(`${PTN_ROOT}/customers/sign_in_token.json`, {
-    method: "POST",
-    mode: "cors",
+const getSignInToken = async (ptnKey: string): Promise<string> =>
+  fetch(`${PTN_ROOT}/customers/sign_in_token.json`, {
+    ...SHARED_FETCH_PARAMS,
     headers: { ...SHARED_HEADERS, "x-ptn-key": ptnKey },
     body: JSON.stringify({
       ptnKeyJSON: JSON.stringify(ptnKey),
@@ -50,31 +41,15 @@ const getSignInToken = async (ptnKey: string): Promise<string> => {
     .then((res) => res.json())
     .then((res) => res.token)
     .catch(() => undefined);
-};
 
-const cleanHashtag = (hashtag: string): string => {
-  if (hashtag.indexOf("#") === 0) {
-    return hashtag.substring(1);
-  }
+const cleanHashtag = (hashtag: string): string =>
+  hashtag.indexOf("#") === 0 ? hashtag.substring(1) : hashtag;
 
-  return hashtag;
-};
-
-const Singleton = (props: {
-  extensionAPI: {
-    settings: {
-      get: GetKeyFn;
-      set: SetSettingFn;
-      getAll: () => { [key: string]: any };
-      panel: {
-        create: (config: { [key: string]: any }) => void;
-      };
-    };
-  };
-}) => {
+const Singleton = (props: SingletonProps) => {
   const { extensionAPI } = props;
 
-  const [ptnKey, setPtnKey] = React.useState<string>();
+  const [ptnKey, setPtnKeyDebounced, setPtnKey] = useDebounce(undefined, 500);
+  const [existingPtnKey, setExistingPtnKey] = React.useState<string>();
   const [signInToken, setSignInToken] = React.useState<string>();
   const [liveSettings, setLiveSettings] = React.useState<PTNSettings>({
     ...DEFAULT_SETTINGS,
@@ -84,22 +59,81 @@ const Singleton = (props: {
   const [clerkIdFromRoam, setClerkIdFromRoam] = React.useState<string>();
 
   const setSignInTokenAsync = async (ptnKey: string) => {
-    if (ptnKey) {
-      const newSignInToken = await getSignInToken(ptnKey);
-      if (newSignInToken) {
-        setSignInToken(newSignInToken);
-      }
+    const newSignInToken = await getSignInToken(ptnKey);
+    if (newSignInToken) {
+      setSignInToken(newSignInToken);
     }
   };
 
-  React.useEffect(() => {
-    setSignInTokenAsync(ptnKey);
-  }, [ptnKey]);
+  const existingPtnKeyFromSettings = React.useMemo(() => {
+    return extensionAPI.settings.get("ptnKey");
+  }, [extensionAPI.settings]);
 
   React.useEffect(() => {
-    if (!extensionAPI) {
+    if (existingPtnKeyFromSettings) {
+      setExistingPtnKey(existingPtnKeyFromSettings);
+    } else if (ptnKeyFromScript) {
+      setExistingPtnKey(ptnKeyFromScript);
+      updateExistingCustomer(ptnKeyFromScript);
+    } else {
+      const createUserAndSetPtnKey = async (email: string, roam_id: string) => {
+        const headers = { ...SHARED_HEADERS };
+
+        try {
+          const response = await fetch(
+            "https://app.phonetonote.com/clerk/create",
+            {
+              method: "POST",
+              mode: "cors",
+              headers,
+              body: JSON.stringify({ email, roam_id }),
+            }
+          );
+
+          const {
+            ptnKey: newPtnKey,
+            clerkId: newClerkId,
+          }: {
+            ptnKey: string | undefined;
+            clerkId: string | undefined;
+          } = await response.json();
+
+          if (newPtnKey && newClerkId) {
+            setClerkIdFromRoam(newClerkId);
+            setExistingPtnKey(newPtnKey);
+          } else {
+            throw new Error("No ptnKey returned from server");
+          }
+        } catch (e) {
+          console.log("Error creating new user:", e);
+        }
+      };
+
+      renderOnboardingAlert({
+        onConfirm: () => {
+          createUserAndSetPtnKey(
+            getCurrentUserEmail(),
+            getCurrentUserUid()
+          ).then(() => {
+            // TODO render toast message
+          });
+        },
+        onCancel: () => {
+          // TODO render toast message showing/linking to ptn settings
+
+          setExistingPtnKey(BRING_YOUR_OWN_PTN_KEY);
+        },
+      });
+    }
+  }, [existingPtnKeyFromSettings]);
+
+  React.useEffect(() => {
+    if (!extensionAPI || !existingPtnKey || !setPtnKey || !setPtnKeyDebounced) {
       return;
     } else {
+      if (existingPtnKey !== BRING_YOUR_OWN_PTN_KEY) {
+        extensionAPI.settings.set("ptnKey", existingPtnKey);
+      }
       extensionAPI.settings.panel.create({
         tabTitle: "phonetonote",
         settings: [
@@ -108,7 +142,7 @@ const Singleton = (props: {
             action: {
               type: "input",
               onChange: (event: React.FormEvent<HTMLInputElement>) => {
-                setPtnKey(event.currentTarget.value);
+                setPtnKeyDebounced(event.currentTarget.value);
               },
             },
           },
@@ -117,8 +151,8 @@ const Singleton = (props: {
             action: {
               type: "switch",
               onChange: (event: React.FormEvent<HTMLInputElement>) => {
-                setLiveSettings((myLiveSettings) => ({
-                  ...myLiveSettings,
+                setLiveSettings((liveSettings) => ({
+                  ...liveSettings,
                   showDashLink: event.currentTarget.checked,
                 }));
               },
@@ -203,60 +237,16 @@ const Singleton = (props: {
           }),
         ],
       });
-
-      const existingPtnKeyFromSettings = extensionAPI.settings.get("ptnKey");
-      if (existingPtnKeyFromSettings) {
-        setPtnKey(existingPtnKeyFromSettings);
-      } else {
-        const existingPtnKeyFromScript = ptnKeyFromScript;
-        if (existingPtnKeyFromScript) {
-          extensionAPI.settings.set("ptnKey", existingPtnKeyFromScript);
-          updateExistingCustomer(existingPtnKeyFromScript);
-          setPtnKey(existingPtnKeyFromScript);
-        } else {
-          const createUserAndSetPtnKey = async (
-            email: string,
-            roam_id: string
-          ) => {
-            const headers = { ...SHARED_HEADERS };
-
-            try {
-              const response = await fetch(
-                "https://app.phonetonote.com/clerk/create",
-                {
-                  method: "POST",
-                  mode: "cors",
-                  headers,
-                  body: JSON.stringify({ email, roam_id }),
-                }
-              );
-
-              const {
-                ptnKey: newPtnKey,
-                clerkId: newClerkId,
-              }: { ptnKey: string | undefined; clerkId: string | undefined } =
-                await response.json();
-
-              if (newPtnKey && newClerkId) {
-                setClerkIdFromRoam(newClerkId);
-                extensionAPI.settings.set("ptnKey", newPtnKey);
-                setPtnKey(newPtnKey);
-              } else {
-                throw new Error("No ptnKey returned from server");
-              }
-            } catch (e) {
-              console.log("Error creating new user:", e);
-            }
-          };
-
-          createUserAndSetPtnKey(getCurrentUserEmail(), getCurrentUserUid());
-        }
-      }
+      setPtnKey(existingPtnKey);
     }
-  }, [extensionAPI]);
+  }, [extensionAPI, existingPtnKey, setPtnKey, setPtnKeyDebounced]);
 
   React.useEffect(() => {
-    if (ptnKey && ptnKey.length > 0) {
+    if (ptnKey && liveSettings) {
+      if (ptnKey !== BRING_YOUR_OWN_PTN_KEY) {
+        setSignInTokenAsync(ptnKey);
+      }
+
       const fetchFreshNotes = (e: any) => {
         if (!e || e?.target?.innerText?.toUpperCase() === "DAILY NOTES") {
           fetchNotes(ptnKey, getCurrentUserUid(), liveSettings);
@@ -273,13 +263,18 @@ const Singleton = (props: {
     }
   }, [liveSettings, ptnKey]);
 
+  const clerkIdFromRoamString = clerkIdFromRoam || "null";
+  const welcomeUrl = `welcome?token=${signInToken}&clerkIdFromRoam=${clerkIdFromRoamString}`;
+  const urlFragment = ptnKey === BRING_YOUR_OWN_PTN_KEY ? "" : welcomeUrl;
+  const ptnDashLink = `https://dashboard.phonetonote.com/${urlFragment}`;
+
+  const noSettings = !Object.keys(liveSettings).includes("showDashLink");
+  const dashLinkEnabled = liveSettings?.showDashLink;
+
   return signInToken ? (
-    !Object.keys(liveSettings).includes("showDashLink") ||
-    liveSettings?.showDashLink ? (
+    noSettings || dashLinkEnabled ? (
       <a
-        href={`https://dashboard.phonetonote.com/welcome?token=${signInToken}&clerkIdFromRoam=${
-          clerkIdFromRoam || "null"
-        }`}
+        href={ptnDashLink}
         className="log-button"
         target={"_blank"}
         rel="noreferrer"
@@ -291,7 +286,11 @@ const Singleton = (props: {
       <> </>
     )
   ) : (
-    <span style={{ color: "white", marginLeft: "20px" }}>ptn is loading</span>
+    <Spinner
+      aria-label={"ptn is loading..."}
+      intent={Intent.SUCCESS}
+      size={SpinnerSize.SMALL}
+    />
   );
 };
 

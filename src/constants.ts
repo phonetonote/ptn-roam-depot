@@ -1,4 +1,4 @@
-import { InputType } from "./types";
+import { InputType, PTNDefaultSettings, PTNSettings } from "./types";
 
 export const SERVER_URL = "https://app.phonetoroam.com";
 export const ID = "ptr";
@@ -18,37 +18,51 @@ export const inputTypes: InputType[] = [
   "email",
 ];
 
+export const BRING_YOUR_OWN_PTN_KEY = "BRING_YOUR_OWN_PTN_KEY";
+
 export const SETTINGS_CONFIG = {
   ptnKey: {
-    type: "text",
     name: "ptn key",
     description: "your ptn key, used to tie your phonetonote account to roam",
     id: "ptnKey",
   },
   smartblockTemplate: {
     name: "smartblock template",
-    type: "text",
     description:
       "((BETA FEATURE)) pass each phonetonote message to the smartblock of your choice. use this to let smartblocks handle rendering your mobile notes for more customizability.",
     id: "smartblockTemplate",
   },
   [HASHTAG_KEY]: {
     name: HASHTAG_TITLE,
-    type: "text",
     description:
       "if you want  #hashtag at the end of each phonetoroam note, put what you want that hashtag to be here. if you do not want a hashtag, make this blank.",
     id: HASHTAG_KEY,
   },
   [PARENT_BLOCK_KEY]: {
     name: PARENT_BLOCK_TITLE,
-    type: "text",
     description:
       "if you want your phonetoroam notes nested under a block, give that block a name here. if you do not want them nested under anything, leave this blank.",
     id: PARENT_BLOCK_KEY,
   },
   ["showDashLink"]: {
     name: "show link to ptn dashboard in left nav",
-    type: "boolean",
     id: "showDashLink",
   },
+};
+
+export const ROOT_ID = "ptn-roam-depot-root";
+export const SHARED_HEADERS = { "Content-Type": "application/json" };
+export const PTN_ROOT = "https://app.phonetonote.com";
+export const DEFAULT_SETTINGS: Pick<PTNSettings, PTNDefaultSettings> = {
+  [HASHTAG_KEY]: "ptn",
+  [PARENT_BLOCK_KEY]: "mobile notes",
+  ["showDashLink"]: true,
+};
+
+export const SHARED_FETCH_PARAMS: {
+  method: string;
+  mode: RequestMode;
+} = {
+  method: "POST",
+  mode: "cors",
 };

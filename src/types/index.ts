@@ -2,9 +2,6 @@ import { HASHTAG_KEY, PARENT_BLOCK_KEY } from "../constants";
 
 export type OnboardingStatus = "START" | "END";
 
-export type GetKeyFn = (key: string) => string | undefined;
-export type SetSettingFn = (key: string, value: any) => void;
-
 export type RoamExtentionAPI = {
   extensionAPI: {
     settings: {
@@ -55,4 +52,22 @@ export type PTNDefaultSettings =
 export type RoamNode = {
   text: string;
   children: RoamNode[];
+};
+
+type GetKeyFn = (key: string) => string | undefined;
+type SetSettingFn = (key: string, value: any) => void;
+type GetAllFn = () => { [key: string]: any };
+type CreatePanelFn = (config: { [key: string]: any }) => void;
+
+export type SingletonProps = {
+  extensionAPI: {
+    settings: {
+      get: GetKeyFn;
+      set: SetSettingFn;
+      getAll: GetAllFn;
+      panel: {
+        create: CreatePanelFn;
+      };
+    };
+  };
 };
