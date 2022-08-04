@@ -1,6 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import getCurrentUserEmail from "roamjs-components/queries/getCurrentUserEmail";
+import { render as renderToast } from "roamjs-components/components/Toast";
 import getCurrentUserUid from "roamjs-components/queries/getCurrentUserUid";
 import { render as renderOnboardingAlert } from "./components/onboarding-alert";
 import { useDebounce } from "@react-hook/debounce";
@@ -45,29 +46,22 @@ const getSignInToken = async (ptnKey: string): Promise<string> =>
 const cleanHashtag = (hashtag: string): string =>
   hashtag.indexOf("#") === 0 ? hashtag.substring(1) : hashtag;
 
-const Singleton = (props: SingletonProps) => {
-  const { extensionAPI } = props;
-
+const Singleton = ({ extensionAPI }: SingletonProps) => {
   const [ptnKey, setPtnKeyDebounced, setPtnKey] = useDebounce(undefined, 500);
   const [existingPtnKey, setExistingPtnKey] = React.useState<string>();
   const [signInToken, setSignInToken] = React.useState<string>();
+  const [clerkIdFromRoam, setClerkIdFromRoam] = React.useState<string>();
   const [liveSettings, setLiveSettings] = React.useState<PTNSettings>({
     ...DEFAULT_SETTINGS,
     ...extensionAPI.settings.getAll(),
   } as PTNSettings);
 
-  const [clerkIdFromRoam, setClerkIdFromRoam] = React.useState<string>();
-
-  const setSignInTokenAsync = async (ptnKey: string) => {
-    const newSignInToken = await getSignInToken(ptnKey);
-    if (newSignInToken) {
-      setSignInToken(newSignInToken);
-    }
-  };
-
   const existingPtnKeyFromSettings = React.useMemo(() => {
     return extensionAPI.settings.get("ptnKey");
   }, [extensionAPI.settings]);
+
+  const setSignInTokenAsync = async (ptnKey: string) =>
+    setSignInToken(await getSignInToken(ptnKey));
 
   React.useEffect(() => {
     if (existingPtnKeyFromSettings) {
@@ -77,15 +71,13 @@ const Singleton = (props: SingletonProps) => {
       updateExistingCustomer(ptnKeyFromScript);
     } else {
       const createUserAndSetPtnKey = async (email: string, roam_id: string) => {
-        const headers = { ...SHARED_HEADERS };
-
         try {
           const response = await fetch(
             "https://app.phonetonote.com/clerk/create",
             {
               method: "POST",
               mode: "cors",
-              headers,
+              headers: { ...SHARED_HEADERS },
               body: JSON.stringify({ email, roam_id }),
             }
           );
@@ -115,12 +107,21 @@ const Singleton = (props: SingletonProps) => {
             getCurrentUserEmail(),
             getCurrentUserUid()
           ).then(() => {
-            // TODO render toast message
+            renderToast({
+              id: "NEW_PTN_KEY_CREATED",
+              content:
+                "🙌 new ptn key created, thanks for joining phonetonote. click the ptn dash link in the left sidebar to get started",
+              intent: Intent.SUCCESS,
+            });
           });
         },
         onCancel: () => {
-          // TODO render toast message showing/linking to ptn settings
-
+          renderToast({
+            id: BRING_YOUR_OWN_PTN_KEY,
+            content:
+              "👍 please add your ptn key in roam's phonetonote extension settings",
+            intent: Intent.SUCCESS,
+          });
           setExistingPtnKey(BRING_YOUR_OWN_PTN_KEY);
         },
       });
@@ -237,6 +238,7 @@ const Singleton = (props: SingletonProps) => {
           }),
         ],
       });
+
       setPtnKey(existingPtnKey);
     }
   }, [extensionAPI, existingPtnKey, setPtnKey, setPtnKeyDebounced]);
@@ -247,8 +249,14 @@ const Singleton = (props: SingletonProps) => {
         setSignInTokenAsync(ptnKey);
       }
 
-      const fetchFreshNotes = (e: any) => {
-        if (!e || e?.target?.innerText?.toUpperCase() === "DAILY NOTES") {
+      const fetchFreshNotes = (e: PointerEvent | undefined) => {
+        // e is undefined when being fired from setInterval
+        // otherwise it is a pointer event with an HTML target,
+        // we fetch notes when the target is the the DAILY NOTES button
+        if (
+          !e ||
+          (e?.target as HTMLElement)?.innerText?.toUpperCase() === "DAILY NOTES"
+        ) {
           fetchNotes(ptnKey, getCurrentUserUid(), liveSettings);
         }
       };
@@ -270,8 +278,9 @@ const Singleton = (props: SingletonProps) => {
 
   const noSettings = !Object.keys(liveSettings).includes("showDashLink");
   const dashLinkEnabled = liveSettings?.showDashLink;
+  const ptnLinkIsAvailable = signInToken || ptnKey === BRING_YOUR_OWN_PTN_KEY;
 
-  return signInToken ? (
+  return ptnLinkIsAvailable ? (
     noSettings || dashLinkEnabled ? (
       <a
         href={ptnDashLink}
