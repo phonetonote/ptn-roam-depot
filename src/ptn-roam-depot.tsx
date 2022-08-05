@@ -47,18 +47,21 @@ const cleanHashtag = (hashtag: string): string =>
   hashtag.indexOf("#") === 0 ? hashtag.substring(1) : hashtag;
 
 const Singleton = ({ extensionAPI }: SingletonProps) => {
+  const [existingPtnKeyFromSettings, existingSettings] = React.useMemo(() => {
+    return [
+      extensionAPI.settings.get("ptnKey"),
+      extensionAPI.settings.getAll(),
+    ];
+  }, [extensionAPI.settings]);
+
   const [ptnKey, setPtnKeyDebounced, setPtnKey] = useDebounce(undefined, 500);
   const [existingPtnKey, setExistingPtnKey] = React.useState<string>();
   const [signInToken, setSignInToken] = React.useState<string>();
   const [clerkIdFromRoam, setClerkIdFromRoam] = React.useState<string>();
   const [liveSettings, setLiveSettings] = React.useState<PTNSettings>({
     ...DEFAULT_SETTINGS,
-    ...extensionAPI.settings.getAll(),
+    ...existingSettings,
   } as PTNSettings);
-
-  const existingPtnKeyFromSettings = React.useMemo(() => {
-    return extensionAPI.settings.get("ptnKey");
-  }, [extensionAPI.settings]);
 
   const setSignInTokenAsync = async (ptnKey: string) =>
     setSignInToken(await getSignInToken(ptnKey));
@@ -152,9 +155,12 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
             action: {
               type: "switch",
               onChange: (event: React.FormEvent<HTMLInputElement>) => {
+                const newObj = {
+                  ["showDashLink"]: !!event?.currentTarget?.checked,
+                };
                 setLiveSettings((liveSettings) => ({
                   ...liveSettings,
-                  showDashLink: event.currentTarget.checked,
+                  ...newObj,
                 }));
               },
             },
@@ -164,9 +170,12 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
             action: {
               type: "input",
               onChange: (event: React.FormEvent<HTMLInputElement>) => {
+                const newObj = {
+                  smartblockTemplate: event?.currentTarget?.value,
+                };
                 setLiveSettings((liveSettings) => ({
                   ...liveSettings,
-                  smartblockTemplate: event.currentTarget.value,
+                  ...newObj,
                 }));
               },
             },
@@ -176,13 +185,12 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
             action: {
               type: "input",
               onChange: (event: React.FormEvent<HTMLInputElement>) => {
-                const e = event.currentTarget;
-                let updatedValue = {};
-                updatedValue = { [HASHTAG_KEY]: cleanHashtag(e.value) };
-
+                const newObj = {
+                  [HASHTAG_KEY]: cleanHashtag(event?.currentTarget?.value),
+                };
                 setLiveSettings((liveSettings) => ({
                   ...liveSettings,
-                  ...updatedValue,
+                  ...newObj,
                 }));
               },
             },
@@ -192,9 +200,12 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
             action: {
               type: "input",
               onChange: (event: React.FormEvent<HTMLInputElement>) => {
+                const newObj = {
+                  [PARENT_BLOCK_KEY]: event?.currentTarget?.value,
+                };
                 setLiveSettings((liveSettings) => ({
                   ...liveSettings,
-                  [PARENT_BLOCK_KEY]: event.currentTarget.value,
+                  ...newObj,
                 }));
               },
             },
@@ -209,9 +220,10 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
               action: {
                 type: "input",
                 onChange: (event: React.FormEvent<HTMLInputElement>) => {
+                  const newObj = { [id]: event?.currentTarget?.value };
                   setLiveSettings((liveSettings) => ({
                     ...liveSettings,
-                    [id]: event.currentTarget.value,
+                    ...newObj,
                   }));
                 },
               },
@@ -228,9 +240,10 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
               action: {
                 type: "input",
                 onChange: (event: React.FormEvent<HTMLInputElement>) => {
+                  const newObj = { [id]: event?.currentTarget?.value };
                   setLiveSettings((liveSettings) => ({
                     ...liveSettings,
-                    [id]: event.currentTarget.value,
+                    ...newObj,
                   }));
                 },
               },
@@ -245,10 +258,6 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
 
   React.useEffect(() => {
     if (ptnKey && liveSettings) {
-      if (ptnKey !== BRING_YOUR_OWN_PTN_KEY) {
-        setSignInTokenAsync(ptnKey);
-      }
-
       const fetchFreshNotes = (e: PointerEvent | undefined) => {
         // e is undefined when being fired from setInterval
         // otherwise it is a pointer event with an HTML target,
@@ -270,6 +279,12 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
       };
     }
   }, [liveSettings, ptnKey]);
+
+  React.useEffect(() => {
+    if (ptnKey && ptnKey !== BRING_YOUR_OWN_PTN_KEY) {
+      setSignInTokenAsync(ptnKey);
+    }
+  }, [ptnKey]);
 
   const clerkIdFromRoamString = clerkIdFromRoam || "null";
   const welcomeUrl = `welcome?token=${signInToken}&clerkIdFromRoam=${clerkIdFromRoamString}`;
