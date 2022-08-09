@@ -1,5 +1,6 @@
 phonetonote helps you capture your thoughts on the go.
 
+
 ## how does it work?
 
 after installing and configuring your account, you'll be able to
