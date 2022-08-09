@@ -1,4 +1,5 @@
 import { Alert, Checkbox, Classes } from "@blueprintjs/core";
+import React from "react";
 import createOverlayRender from "roamjs-components/util/createOverlayRender";
 
 const OnboardingAlert = ({ onConfirm, onCancel, onClose }: any) => {

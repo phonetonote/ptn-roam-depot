@@ -1,5 +1,5 @@
 import axios from "axios";
-import { SCRIPT_ID, SERVER_URL } from "./constants";
+import { MD_IMAGE_REGEX, SERVER_URL } from "./constants";
 import { findOrCreateParentUid } from "./find-or-create-parent-uid";
 
 import createBlock from "roamjs-components/writes/createBlock";
@@ -7,9 +7,10 @@ import getCreateTimeByBlockUid from "roamjs-components/queries/getCreateTimeByBl
 
 import { reduceFeedItems } from "./reduce-messages";
 import { startingOrder } from "./starting-order";
-import { itemToNode, FeedItem } from "ptn-helpers";
-import { InputType, PTNSettings } from "./types";
+import { FeedAttachment, FeedItem, itemToNode } from "ptn-helpers";
+import { InputType, PTNSettings, RoamExtentionAPI } from "./types";
 import { InputTextNode } from "roamjs-components/types";
+import { cleanAttachment } from "./clean-attachment";
 
 export const fetchNotes = async (
   ptnKey: string,
@@ -31,29 +32,30 @@ export const fetchNotes = async (
       const messageMap = feedItems.reduce(reduceFeedItems, {});
 
       for (const pageName of Object.keys(messageMap)) {
-        for (const senderType of Object.keys(
-          messageMap[pageName]
-        ) as InputType[]) {
+        for (const senderType of Object.keys(messageMap[pageName]) as InputType[]) {
           const feedItems: FeedItem[] = messageMap[pageName][senderType];
           const date = new Date(feedItems[0].date_published),
             parentUid = await findOrCreateParentUid(
               date,
-              settings[`${senderType}ParentBlock`] ||
-                settings?.parentBlockTitle,
+              settings[`${senderType}ParentBlock`] || settings?.parentBlockTitle,
               window.roamAlphaAPI,
               createBlock
             );
-          for (const [i, feedItem] of feedItems.entries()) {
-            const hashtag =
-              settings[`${senderType}Hashtag`] || hashtagFromSetting;
+          for (const [i, feedItem] of Array.from(feedItems.entries())) {
+            for (var j = 0; j < (feedItem?.attachments?.length ?? 0); j++) {
+              const attachment = { ...feedItem.attachments[j] };
+              const cleanedAttachment = await cleanAttachment(attachment);
+              if (cleanedAttachment) {
+                feedItem.attachments[j] = cleanedAttachment;
+              }
+            }
+            const hashtag = settings[`${senderType}Hashtag`] || hashtagFromSetting;
             const node: InputTextNode = itemToNode(feedItem, hashtag);
 
-            const existingBlock =
-              node?.uid && (await getCreateTimeByBlockUid(`${node.uid}`));
+            const existingBlock = node?.uid && (await getCreateTimeByBlockUid(`${node.uid}`));
 
             if (!node.uid || !existingBlock) {
-              const hasSmartBlockTemplate =
-                smartblockTemplate && smartblockTemplate.length > 0;
+              const hasSmartBlockTemplate = smartblockTemplate && smartblockTemplate.length > 0;
 
               const orderOffset = hasSmartBlockTemplate ? i * 2 : i;
 
@@ -62,10 +64,7 @@ export const fetchNotes = async (
                 window.roamAlphaAPI.createBlock({
                   location: {
                     "parent-uid": parentUid,
-                    order:
-                      startingOrder(parentUid, window.roamAlphaAPI) +
-                      orderOffset +
-                      1,
+                    order: startingOrder(parentUid, window.roamAlphaAPI) + orderOffset + 1,
                   },
                   block: { string: "", uid: smartBlockId },
                 });
@@ -79,7 +78,7 @@ export const fetchNotes = async (
                     senderType: senderType,
                     attachmentText:
                       feedItem.attachments
-                        ?.map((attachment) => attachment.title)
+                        ?.map((attachment: FeedAttachment) => attachment.title)
                         .join(", ") || "",
                   },
                 });
@@ -87,16 +86,14 @@ export const fetchNotes = async (
                 await createBlock({
                   node,
                   parentUid,
-                  order:
-                    startingOrder(parentUid, window.roamAlphaAPI) + orderOffset,
+                  order: startingOrder(parentUid, window.roamAlphaAPI) + orderOffset,
                 });
               }
             }
 
-            await axios.patch(
-              `${SERVER_URL}/feed/${feedItem.id}.json?roam_key=${ptnKey}`,
-              { status: "synced" }
-            );
+            await axios.patch(`${SERVER_URL}/feed/${feedItem.id}.json?roam_key=${ptnKey}`, {
+              status: "synced",
+            });
           }
         }
       }

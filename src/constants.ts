@@ -66,3 +66,5 @@ export const SHARED_FETCH_PARAMS: {
   method: "POST",
   mode: "cors",
 };
+
+export const MD_IMAGE_REGEX = /\!\[\]\((.*)\)/g;
