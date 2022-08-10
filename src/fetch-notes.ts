@@ -93,6 +93,7 @@ export const fetchNotes = async (
 
             await axios.patch(`${SERVER_URL}/feed/${feedItem.id}.json?roam_key=${ptnKey}`, {
               status: "synced",
+              synced_by: "roam",
             });
           }
         }

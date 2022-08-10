@@ -1,9 +1,7 @@
 import { FeedAttachment } from "ptn-helpers";
 import { MD_IMAGE_REGEX } from "./constants";
 
-export const cleanAttachment = async (
-  attachment: FeedAttachment
-): Promise<FeedAttachment> => {
+export const cleanAttachment = async (attachment: FeedAttachment): Promise<FeedAttachment> => {
   const cleanedAttachment = { ...attachment };
   const originalUrl = attachment.url;
   if (originalUrl) {
@@ -29,15 +27,12 @@ export const cleanAttachment = async (
       }).then((x: any) => x)) ?? "file-upload-error";
 
     const strippedUrl = [...uploadedUrl.matchAll(MD_IMAGE_REGEX)];
-    const cleanUrl = strippedUrl?.at(0)?.at(1) ?? uploadedUrl;
+    const cleanUrl = strippedUrl?.[0]?.[1] ?? uploadedUrl;
     cleanedAttachment["url"] = cleanUrl;
 
     const attachmentType = attachment._ptr_media_type;
     let attachmentTitle = attachment.title;
-    if (
-      (!attachmentTitle || attachmentTitle === "") &&
-      attachmentType === "document"
-    ) {
+    if ((!attachmentTitle || attachmentTitle === "") && attachmentType === "document") {
       cleanedAttachment["title"] = lastSplit;
     }
   }

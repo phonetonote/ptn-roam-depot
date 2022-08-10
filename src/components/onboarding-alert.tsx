@@ -1,6 +1,7 @@
-import { Alert, Checkbox, Classes } from "@blueprintjs/core";
+import { Alert } from "@blueprintjs/core";
 import React from "react";
 import createOverlayRender from "roamjs-components/util/createOverlayRender";
+import "./onboarding-alert.css";
 
 const OnboardingAlert = ({ onConfirm, onCancel, onClose }: any) => {
   return (
@@ -22,9 +23,6 @@ const OnboardingAlert = ({ onConfirm, onCancel, onClose }: any) => {
   );
 };
 
-export const render = createOverlayRender<any>(
-  "onboarding-alert",
-  OnboardingAlert
-);
+export const render = createOverlayRender<any>("onboarding-alert", OnboardingAlert);
 
 export default OnboardingAlert;
