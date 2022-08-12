@@ -31,17 +31,24 @@ const updateExistingCustomer = async (ptnKey: string) =>
     headers: { ...SHARED_HEADERS, "x-ptn-key": ptnKey },
   });
 
-const getSignInToken = async (ptnKey: string): Promise<string> =>
-  fetch(`${PTN_ROOT}/customers/sign_in_token.json`, {
+const getSignInToken = async (ptnKey: string): Promise<string> => {
+  return fetch(`${PTN_ROOT}/customers/sign_in_token.json`, {
     ...SHARED_FETCH_PARAMS,
     headers: { ...SHARED_HEADERS, "x-ptn-key": ptnKey },
     body: JSON.stringify({
       ptnKeyJSON: JSON.stringify(ptnKey),
     }),
   })
-    .then((res) => res.json())
-    .then((res) => res.token)
-    .catch(() => undefined);
+    .then((res) => {
+      if (res.status === 203) {
+        return undefined;
+      } else {
+        return res.json();
+      }
+    })
+    .then((res) => (res ? res.token : undefined))
+    .catch((e) => console.log(`ptn error ${e}`));
+};
 
 const cleanHashtag = (hashtag: string): string =>
   hashtag.indexOf("#") === 0 ? hashtag.substring(1) : hashtag;
@@ -60,8 +67,10 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
     ...existingSettings,
   } as PTNSettings);
 
-  const setSignInTokenAsync = async (ptnKey: string) =>
-    setSignInToken(await getSignInToken(ptnKey));
+  const setSignInTokenAsync = async (ptnKey: string) => {
+    const newSignInToken = await getSignInToken(ptnKey);
+    setSignInToken((signInToken) => newSignInToken || signInToken);
+  };
 
   React.useEffect(() => {
     if (existingPtnKeyFromSettings) {
@@ -94,7 +103,7 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
             throw new Error("No ptnKey returned from server");
           }
         } catch (e) {
-          console.log("Error creating new user:", e);
+          console.log("ptn error creating new user:", e);
         }
       };
 
