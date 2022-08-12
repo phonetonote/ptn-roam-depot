@@ -9,14 +9,7 @@ export const HASHTAG_KEY = "hashtag";
 export const HASHTAG_TITLE = "hashtag";
 export const SCRIPT_ID = "phone-to-roam-script";
 
-export const inputTypes: InputType[] = [
-  "sms",
-  "facebook",
-  "alfred",
-  "telegram",
-  "zapier",
-  "email",
-];
+export const inputTypes: InputType[] = ["sms", "facebook", "alfred", "telegram", "zapier", "email"];
 
 export const BRING_YOUR_OWN_PTN_KEY = "BRING_YOUR_OWN_PTN_KEY";
 

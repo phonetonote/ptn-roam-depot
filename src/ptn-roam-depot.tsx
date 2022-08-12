@@ -48,10 +48,7 @@ const cleanHashtag = (hashtag: string): string =>
 
 const Singleton = ({ extensionAPI }: SingletonProps) => {
   const [existingPtnKeyFromSettings, existingSettings] = React.useMemo(() => {
-    return [
-      extensionAPI.settings.get("ptnKey"),
-      extensionAPI.settings.getAll(),
-    ];
+    return [extensionAPI.settings.get("ptnKey"), extensionAPI.settings.getAll()];
   }, [extensionAPI.settings]);
 
   const [ptnKey, setPtnKeyDebounced, setPtnKey] = useDebounce(undefined, 500);
@@ -75,15 +72,12 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
     } else {
       const createUserAndSetPtnKey = async (email: string, roam_id: string) => {
         try {
-          const response = await fetch(
-            "https://app.phonetonote.com/clerk/create",
-            {
-              method: "POST",
-              mode: "cors",
-              headers: { ...SHARED_HEADERS },
-              body: JSON.stringify({ email, roam_id }),
-            }
-          );
+          const response = await fetch("https://app.phonetonote.com/clerk/create", {
+            method: "POST",
+            mode: "cors",
+            headers: { ...SHARED_HEADERS },
+            body: JSON.stringify({ email, roam_id }),
+          });
 
           const {
             ptnKey: newPtnKey,
@@ -106,10 +100,7 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
 
       renderOnboardingAlert({
         onConfirm: () => {
-          createUserAndSetPtnKey(
-            getCurrentUserEmail(),
-            getCurrentUserUid()
-          ).then(() => {
+          createUserAndSetPtnKey(getCurrentUserEmail(), getCurrentUserUid()).then(() => {
             renderToast({
               id: "NEW_PTN_KEY_CREATED",
               content:
@@ -121,8 +112,7 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
         onCancel: () => {
           renderToast({
             id: BRING_YOUR_OWN_PTN_KEY,
-            content:
-              "👍 please add your ptn key in roam's phonetonote extension settings",
+            content: "👍 please add your ptn key in roam's phonetonote extension settings",
             intent: Intent.SUCCESS,
           });
           setExistingPtnKey(BRING_YOUR_OWN_PTN_KEY);
@@ -262,10 +252,7 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
         // e is undefined when being fired from setInterval
         // otherwise it is a pointer event with an HTML target,
         // we fetch notes when the target is the the DAILY NOTES button
-        if (
-          !e ||
-          (e?.target as HTMLElement)?.innerText?.toUpperCase() === "DAILY NOTES"
-        ) {
+        if (!e || (e?.target as HTMLElement)?.innerText?.toUpperCase() === "DAILY NOTES") {
           fetchNotes(ptnKey, getCurrentUserUid(), liveSettings);
         }
       };
@@ -297,12 +284,7 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
 
   return ptnLinkIsAvailable ? (
     noSettings || dashLinkEnabled ? (
-      <a
-        href={ptnDashLink}
-        className="log-button"
-        target={"_blank"}
-        rel="noreferrer"
-      >
+      <a href={ptnDashLink} className="log-button" target={"_blank"} rel="noreferrer">
         <span className="bp3-icon bp3-icon-mobile-phone icon"></span>
         ptn dash ↗
       </a>
@@ -310,19 +292,13 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
       <> </>
     )
   ) : (
-    <Spinner
-      aria-label={"ptn is loading..."}
-      intent={Intent.SUCCESS}
-      size={SpinnerSize.SMALL}
-    />
+    <Spinner aria-label={"ptn is loading..."} intent={Intent.SUCCESS} size={SpinnerSize.SMALL} />
   );
 };
 
 export default {
   onload: ({ extensionAPI }: RoamExtentionAPI) => {
-    const container = document.getElementsByClassName(
-      "roam-sidebar-content"
-    )[0];
+    const container = document.getElementsByClassName("roam-sidebar-content")[0];
     const ptnRoot = document.createElement("div");
     ptnRoot.id = `${ROOT_ID}`;
 
