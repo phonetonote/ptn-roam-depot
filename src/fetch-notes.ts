@@ -80,6 +80,10 @@ export const fetchNotes = async (
                       feedItem.attachments
                         ?.map((attachment: FeedAttachment) => attachment.title)
                         .join(", ") || "",
+                    attachmentUrl:
+                      feedItem.attachments
+                        ?.map((attachment: FeedAttachment) => attachment.url)
+                        .join(", ") || "",
                   },
                 });
               } else {
