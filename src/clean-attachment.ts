@@ -1,10 +1,11 @@
 import { FeedAttachment } from "ptn-helpers";
-import { MD_IMAGE_REGEX } from "./constants";
+import { MD_IMAGE_REGEX, MEDIA_URL } from "./constants";
 
 export const cleanAttachment = async (attachment: FeedAttachment): Promise<FeedAttachment> => {
   const cleanedAttachment = { ...attachment };
   const originalUrl = attachment.url;
-  if (originalUrl) {
+
+  if (originalUrl && originalUrl.includes(MEDIA_URL)) {
     const { file, mimeType } = await fetch(originalUrl)
       .then(async (r) => {
         return {

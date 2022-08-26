@@ -1,6 +1,7 @@
 import { InputType, PTNDefaultSettings, PTNSettings } from "./types";
 
 export const SERVER_URL = "https://app.phonetoroam.com";
+export const MEDIA_URL = "https://ptn-telegram-attachments.ptn.computer/";
 export const ID = "ptr";
 export const CONFIG = `roam/js/${ID}`;
 export const PARENT_BLOCK_KEY = "parentBlockTitle";
