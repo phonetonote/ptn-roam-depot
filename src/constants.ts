@@ -1,6 +1,6 @@
 import { InputType, PTNDefaultSettings, PTNSettings } from "./types";
 
-export const SERVER_URL = "https://app.phonetoroam.com";
+export const SERVER_URL = "https://app.phonetonote.com";
 export const MEDIA_URL = "https://ptn-telegram-attachments.ptn.computer/";
 export const ID = "ptr";
 export const CONFIG = `roam/js/${ID}`;
@@ -29,13 +29,13 @@ export const SETTINGS_CONFIG = {
   [HASHTAG_KEY]: {
     name: HASHTAG_TITLE,
     description:
-      "if you want  #hashtag at the end of each phonetoroam note, put what you want that hashtag to be here. if you do not want a hashtag, make this blank.",
+      "if you want  #hashtag at the end of each ptn note, put what you want that hashtag to be here. if you do not want a hashtag, make this blank.",
     id: HASHTAG_KEY,
   },
   [PARENT_BLOCK_KEY]: {
     name: PARENT_BLOCK_TITLE,
     description:
-      "if you want your phonetoroam notes nested under a block, give that block a name here. if you do not want them nested under anything, leave this blank.",
+      "if you want your ptn notes nested under a block, give that block a name here. if you do not want them nested under anything, leave this blank.",
     id: PARENT_BLOCK_KEY,
   },
   ["showDashLink"]: {
@@ -48,7 +48,7 @@ export const ROOT_ID = "ptn-roam-depot-root";
 export const SHARED_HEADERS = { "Content-Type": "application/json" };
 export const PTN_ROOT = "https://app.phonetonote.com";
 export const DEFAULT_SETTINGS: Pick<PTNSettings, PTNDefaultSettings> = {
-  [HASHTAG_KEY]: "ptn",
+  [HASHTAG_KEY]: "",
   [PARENT_BLOCK_KEY]: "mobile notes",
   ["showDashLink"]: true,
 };
