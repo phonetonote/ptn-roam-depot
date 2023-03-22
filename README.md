@@ -1,6 +1,5 @@
 phonetonote helps you capture your thoughts on the go.
 
-
 ## how does it work?
 
 after installing and configuring your account, you'll be able to
@@ -24,16 +23,6 @@ you can access the dashboard outside of roam by logging into https://dashboard.p
 new notes will be pulled into your graph automatically when you open or refresh roam, and every 90 seconds after.
 
 you can trigger a manual sync by _clicking the Daily Notes link_ in the roam nav.
-
-## roam depot discount
-
-phonetonote's standard plan is normally $5/month, but it is free through roam depot. pro customers also receive a $5/month discount after installation.
-
-this discount will be automatically applied to your account.
-
-## existing phonetonote users
-
-an effort has been made to make onboarding as simple as possible. all you need to do is install the extension, and everything should work with your existing account. the roam-depot coupon will also be added to your existing subscriptions.
 
 ## help
 
