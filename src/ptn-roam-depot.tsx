@@ -20,7 +20,7 @@ import {
 } from "./constants";
 import { fetchNotes } from "./fetch-notes";
 import { PTNSettings, RoamExtentionAPI, SingletonProps } from "./types";
-import { Intent, Spinner, SpinnerSize } from "@blueprintjs/core";
+import { Intent } from "@blueprintjs/core";
 
 const scriptData = document.getElementById(SCRIPT_ID)?.dataset;
 const ptnKeyFromScript = scriptData?.ptn_key || scriptData?.roam_key;
@@ -301,7 +301,7 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
       <> </>
     )
   ) : (
-    <Spinner aria-label={"ptn is loading..."} intent={Intent.SUCCESS} size={SpinnerSize.SMALL} />
+    <> </>
   );
 };
 
