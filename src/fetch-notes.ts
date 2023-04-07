@@ -1,5 +1,5 @@
 import axios from "axios";
-import { MD_IMAGE_REGEX, SERVER_URL } from "./constants";
+import { SERVER_URL } from "./constants";
 import { findOrCreateParentUid } from "./find-or-create-parent-uid";
 
 import createBlock from "roamjs-components/writes/createBlock";
@@ -8,7 +8,7 @@ import getCreateTimeByBlockUid from "roamjs-components/queries/getCreateTimeByBl
 import { reduceFeedItems } from "./reduce-messages";
 import { startingOrder } from "./starting-order";
 import { FeedAttachment, FeedItem, itemToNode } from "ptn-helpers";
-import { InputType, PTNSettings, RoamExtentionAPI } from "./types";
+import { InputType, PTNSettings } from "./types";
 import { InputTextNode } from "roamjs-components/types";
 import { cleanAttachment } from "./clean-attachment";
 
@@ -21,7 +21,7 @@ export const fetchNotes = async (
   axios(`${SERVER_URL}/feed.json?roam_key=${ptnKey}`)
     .then(async (res) => {
       const feedItems: FeedItem[] = res.data["items"];
-      for (var i = 0; i < feedItems.length; i++) {
+      for (let i = 0; i < feedItems.length; i++) {
         const feedItem: FeedItem = feedItems[i];
         await axios.patch(
           `${SERVER_URL}/feed/${feedItem.id}.json?roam_key=${ptnKey}&roam_id=${roamId}&sender_source=roam_depot`,
@@ -42,7 +42,7 @@ export const fetchNotes = async (
               createBlock
             );
           for (const [i, feedItem] of Array.from(feedItems.entries())) {
-            for (var j = 0; j < (feedItem?.attachments?.length ?? 0); j++) {
+            for (let j = 0; j < (feedItem?.attachments?.length ?? 0); j++) {
               const attachment = { ...feedItem.attachments[j] };
               const cleanedAttachment = await cleanAttachment(attachment);
               if (cleanedAttachment) {
@@ -60,7 +60,7 @@ export const fetchNotes = async (
               const orderOffset = hasSmartBlockTemplate ? i * 2 : i;
 
               if (hasSmartBlockTemplate) {
-                let smartBlockId = window.roamAlphaAPI.util.generateUID();
+                const smartBlockId = window.roamAlphaAPI.util.generateUID();
                 window.roamAlphaAPI.createBlock({
                   location: {
                     "parent-uid": parentUid,
@@ -73,7 +73,7 @@ export const fetchNotes = async (
                   srcName: smartblockTemplate,
                   targetUid: smartBlockId,
                   variables: {
-                    rawText: feedItem.content_text,
+                    rawText: feedItem?.content_text || "",
                     hashtag: hashtag,
                     senderType: senderType,
                     attachmentText:
