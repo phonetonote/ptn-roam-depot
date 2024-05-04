@@ -4,7 +4,7 @@
     "name": "scott from ptn",
     "email": "support@phonetonote.com"
   },
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "send ideas from your phone to your roam",
   "main": "index.js",
   "scripts": {
