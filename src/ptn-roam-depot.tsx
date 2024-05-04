@@ -268,6 +268,7 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
 
       document.addEventListener("click", fetchFreshNotes);
       const intervalId = window.setInterval(fetchFreshNotes, 1000 * 90);
+      fetchFreshNotes(undefined);
 
       return () => {
         document.removeEventListener("click", fetchFreshNotes);
