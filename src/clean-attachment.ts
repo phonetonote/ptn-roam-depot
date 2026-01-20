@@ -32,7 +32,7 @@ export const cleanAttachment = async (attachment: FeedAttachment): Promise<FeedA
     cleanedAttachment["url"] = cleanUrl;
 
     const attachmentType = attachment._ptr_media_type;
-    let attachmentTitle = attachment.title;
+    const attachmentTitle = attachment.title;
     if ((!attachmentTitle || attachmentTitle === "") && attachmentType === "document") {
       cleanedAttachment["title"] = lastSplit;
     }
