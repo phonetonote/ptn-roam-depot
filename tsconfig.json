@@ -1,8 +1,17 @@
 {
   "compilerOptions": {
-    "jsx": "react"
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "jsx": "react",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": false,
+    "outDir": "./build"
   },
-  "extends": "./node_modules/roamjs-scripts/dist/default.tsconfig.json",
-  "include": ["src", "node_modules/roamjs-components/types"],
+  "include": ["src"],
   "exclude": ["node_modules"]
 }

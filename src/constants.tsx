@@ -1,3 +1,4 @@
+import React from "react";
 import { InputType, PTNDefaultSettings, PTNSettings } from "./types";
 
 export const SERVER_URL = "https://app.phonetonote.com";
@@ -40,6 +41,7 @@ export const SETTINGS_CONFIG = {
   },
   ["showDashLink"]: {
     name: "show link to ptn dashboard in left nav",
+    description: "the ptn dashboard is available at https://dashboard.phonetonote.com . enabling this setting adds a link to it in the roam sidebar.",
     id: "showDashLink",
   },
 };
@@ -61,4 +63,4 @@ export const SHARED_FETCH_PARAMS: {
   mode: "cors",
 };
 
-export const MD_IMAGE_REGEX = /\!\[\]\((.*)\)/g;
+export const MD_IMAGE_REGEX = /!\[\]\((.*)\)/g;

@@ -1,5 +1,9 @@
 phonetonote helps you capture your thoughts on the go.
 
+## ptn dashboard
+
+access ptn configuration and advanced features at https://dashboard.phonetonote.com/
+
 ## how does it work?
 
 after installing and configuring your account, you'll be able to
