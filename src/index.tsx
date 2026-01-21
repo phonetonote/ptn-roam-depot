@@ -58,7 +58,7 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
     return [extensionAPI.settings.get("ptnKey"), extensionAPI.settings.getAll()];
   }, [extensionAPI.settings]);
 
-  const [ptnKey, setPtnKeyDebounced, setPtnKey] = useDebounce(undefined, 500);
+  const [ptnKey, setPtnKeyDebounced, setPtnKey] = useDebounce<string | undefined>(undefined, 500);
   const [existingPtnKey, setExistingPtnKey] = React.useState<string>();
   const [signInToken, setSignInToken] = React.useState<string>();
   const [clerkIdFromRoam, setClerkIdFromRoam] = React.useState<string>();
@@ -320,7 +320,9 @@ export default {
   },
   onunload: () => {
     const ptnRoot = document.getElementById(ROOT_ID);
-    ReactDOM.unmountComponentAtNode(ptnRoot);
-    ptnRoot.remove();
+    if (ptnRoot) {
+      ReactDOM.unmountComponentAtNode(ptnRoot);
+      ptnRoot.remove();
+    }
   },
 };

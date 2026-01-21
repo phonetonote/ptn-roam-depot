@@ -37,19 +37,21 @@ export const fetchNotes = async (
           const date = new Date(feedItems[0].date_published),
             parentUid = await findOrCreateParentUid(
               date,
-              settings[`${senderType}ParentBlock`] || settings?.parentBlockTitle,
+              settings?.[`${senderType}ParentBlock`] || settings?.parentBlockTitle,
               window.roamAlphaAPI,
               createBlock
             );
           for (const [i, feedItem] of Array.from(feedItems.entries())) {
-            for (let j = 0; j < (feedItem?.attachments?.length ?? 0); j++) {
-              const attachment = { ...feedItem.attachments[j] };
-              const cleanedAttachment = await cleanAttachment(attachment);
-              if (cleanedAttachment) {
-                feedItem.attachments[j] = cleanedAttachment;
+            if (feedItem.attachments) {
+              for (let j = 0; j < feedItem.attachments.length; j++) {
+                const attachment = { ...feedItem.attachments[j] };
+                const cleanedAttachment = await cleanAttachment(attachment);
+                if (cleanedAttachment) {
+                  feedItem.attachments[j] = cleanedAttachment;
+                }
               }
             }
-            const hashtag = settings[`${senderType}Hashtag`] || hashtagFromSetting;
+            const hashtag = settings?.[`${senderType}Hashtag`] || hashtagFromSetting || "";
             const node: InputTextNode = itemToNode(feedItem, hashtag);
 
             const existingBlock = node?.uid && (await getCreateTimeByBlockUid(`${node.uid}`));
@@ -74,7 +76,7 @@ export const fetchNotes = async (
                   targetUid: smartBlockId,
                   variables: {
                     rawText: feedItem?.content_text || "",
-                    hashtag: hashtag,
+                    hashtag,
                     senderType: senderType,
                     attachmentText:
                       feedItem.attachments
