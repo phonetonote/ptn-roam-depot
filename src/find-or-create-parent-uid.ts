@@ -2,7 +2,7 @@ import { RoamNode } from "./types";
 
 export const findOrCreateParentUid = async (
   date: Date,
-  parentBlock: String | undefined,
+  parentBlock: string | undefined,
   roamAPI: any,
   createBlock: (obj: {
     node: RoamNode;

@@ -12,13 +12,12 @@ export const cleanAttachment = async (attachment: FeedAttachment): Promise<FeedA
           file: await r.blob(),
           mimeType: r.headers.get("Content-Type"),
         };
-      })
-      .then((obj) => obj);
+      });
 
     const splits = originalUrl.split("/");
     const lastSplit = splits[splits.length - 1];
     const newFile = new File([file], lastSplit, {
-      type: mimeType,
+      type: mimeType ?? undefined,
     });
 
     const uploadTheFile: any = window.roamAlphaAPI.util.uploadFile;

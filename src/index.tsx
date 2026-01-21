@@ -13,8 +13,8 @@ import {
   inputTypes,
   BRING_YOUR_OWN_PTN_KEY,
   DEFAULT_SETTINGS,
-  PTN_ROOT,
   ROOT_ID,
+  SERVER_URL,
   SHARED_HEADERS,
   SHARED_FETCH_PARAMS,
 } from "./constants";
@@ -26,13 +26,13 @@ const scriptData = document.getElementById(SCRIPT_ID)?.dataset;
 const ptnKeyFromScript = scriptData?.ptn_key || scriptData?.roam_key;
 
 const updateExistingCustomer = async (ptnKey: string) =>
-  await fetch(`${PTN_ROOT}/customers/update`, {
+  await fetch(`${SERVER_URL}/customers/update`, {
     ...SHARED_FETCH_PARAMS,
     headers: { ...SHARED_HEADERS, "x-ptn-key": ptnKey },
   });
 
 const getSignInToken = async (ptnKey: string): Promise<string> => {
-  return fetch(`${PTN_ROOT}/customers/sign_in_token.json`, {
+  return fetch(`${SERVER_URL}/customers/sign_in_token.json`, {
     ...SHARED_FETCH_PARAMS,
     headers: { ...SHARED_HEADERS, "x-ptn-key": ptnKey },
     body: JSON.stringify({
@@ -298,19 +298,15 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
         <span className="bp3-icon bp3-icon-mobile-phone icon"></span>
         ptn dash ↗
       </a>
-    ) : (
-      <> </>
-    )
-  ) : (
-    <> </>
-  );
+    ) : null
+  ) : null;
 };
 
 export default {
   onload: ({ extensionAPI }: RoamExtentionAPI) => {
     const container = document.getElementsByClassName("roam-sidebar-content")[0];
     const ptnRoot = document.createElement("div");
-    ptnRoot.id = `${ROOT_ID}`;
+    ptnRoot.id = ROOT_ID;
 
     const existingButtons = container.getElementsByClassName("log-button");
     const lastExistingButton = existingButtons[existingButtons.length - 1];

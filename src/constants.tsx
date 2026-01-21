@@ -1,10 +1,7 @@
-import React from "react";
 import { InputType, PTNDefaultSettings, PTNSettings } from "./types";
 
 export const SERVER_URL = "https://app.phonetonote.com";
 export const MEDIA_URL = "https://ptn-telegram-attachments.ptn.computer/";
-export const ID = "ptr";
-export const CONFIG = `roam/js/${ID}`;
 export const PARENT_BLOCK_KEY = "parentBlockTitle";
 export const PARENT_BLOCK_TITLE = "parent block title";
 export const HASHTAG_KEY = "hashtag";
@@ -48,7 +45,6 @@ export const SETTINGS_CONFIG = {
 
 export const ROOT_ID = "ptn-roam-depot-root";
 export const SHARED_HEADERS = { "Content-Type": "application/json" };
-export const PTN_ROOT = "https://app.phonetonote.com";
 export const DEFAULT_SETTINGS: Pick<PTNSettings, PTNDefaultSettings> = {
   [HASHTAG_KEY]: "",
   [PARENT_BLOCK_KEY]: "mobile notes",
