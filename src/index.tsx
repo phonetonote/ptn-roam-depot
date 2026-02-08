@@ -313,12 +313,5 @@ export default {
     container.insertBefore(ptnRoot, lastExistingButton);
 
     ReactDOM.render(<Singleton extensionAPI={extensionAPI} />, ptnRoot);
-  },
-  onunload: () => {
-    const ptnRoot = document.getElementById(ROOT_ID);
-    if (ptnRoot) {
-      ReactDOM.unmountComponentAtNode(ptnRoot);
-      ptnRoot.remove();
-    }
-  },
+  }
 };
