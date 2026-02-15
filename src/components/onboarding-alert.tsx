@@ -1,16 +1,6 @@
 import { Alert } from "@blueprintjs/core";
 import React from "react";
 import createOverlayRender from "roamjs-components/util/createOverlayRender";
-import css from "./onboarding-alert.css";
-
-// Inject CSS once
-const styleId = "ptn-onboarding-styles";
-if (!document.getElementById(styleId)) {
-  const style = document.createElement("style");
-  style.id = styleId;
-  style.textContent = css;
-  document.head.appendChild(style);
-}
 
 const OnboardingAlert = ({ onConfirm, onCancel, onClose }: any) => {
   return (
