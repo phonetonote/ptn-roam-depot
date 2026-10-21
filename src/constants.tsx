@@ -3,6 +3,7 @@ import { InputType, PTNDefaultSettings, PTNSettings } from "./types";
 // Set at build time by esbuild.config.mjs.
 declare const PTN_SERVER_URL: string;
 export const SERVER_URL = PTN_SERVER_URL;
+export const PTN_KEY_HEADER = "x-ptn-key";
 export const MEDIA_URL = "https://ptn-telegram-attachments.ptn.computer/";
 export const PARENT_BLOCK_KEY = "parentBlockTitle";
 export const PARENT_BLOCK_TITLE = "parent block title";

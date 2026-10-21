@@ -1,5 +1,5 @@
 import axios from "axios";
-import { SERVER_URL } from "./constants";
+import { PTN_KEY_HEADER, SERVER_URL } from "./constants";
 import { findOrCreateParentUid } from "./find-or-create-parent-uid";
 
 import createBlock from "roamjs-components/writes/createBlock";
@@ -18,14 +18,17 @@ export const fetchNotes = async (
   settings: PTNSettings | undefined
 ) => {
   const { smartblockTemplate, hashtag: hashtagFromSetting } = settings || {};
-  axios(`${SERVER_URL}/feed.json?roam_key=${ptnKey}`)
+  // The key goes in a header, not the URL, so it stays out of server request logs.
+  const authConfig = { headers: { [PTN_KEY_HEADER]: ptnKey } };
+  axios(`${SERVER_URL}/feed.json`, authConfig)
     .then(async (res) => {
       const feedItems: FeedItem[] = res.data["items"];
       for (let i = 0; i < feedItems.length; i++) {
         const feedItem: FeedItem = feedItems[i];
         await axios.patch(
-          `${SERVER_URL}/feed/${feedItem.id}.json?roam_key=${ptnKey}&roam_id=${roamId}&sender_source=roam_depot`,
-          { status: "syncing" }
+          `${SERVER_URL}/feed/${feedItem.id}.json?roam_id=${roamId}&sender_source=roam_depot`,
+          { status: "syncing" },
+          authConfig
         );
       }
 
@@ -97,10 +100,11 @@ export const fetchNotes = async (
               }
             }
 
-            await axios.patch(`${SERVER_URL}/feed/${feedItem.id}.json?roam_key=${ptnKey}`, {
-              status: "synced",
-              synced_by: "roam",
-            });
+            await axios.patch(
+              `${SERVER_URL}/feed/${feedItem.id}.json`,
+              { status: "synced", synced_by: "roam" },
+              authConfig
+            );
           }
         }
       }

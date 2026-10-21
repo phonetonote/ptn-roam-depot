@@ -16,6 +16,7 @@ import {
   BRING_YOUR_OWN_PTN_KEY,
   DEFAULT_SETTINGS,
   ROOT_ID,
+  PTN_KEY_HEADER,
   SERVER_URL,
   SHARED_HEADERS,
   SHARED_FETCH_PARAMS,
@@ -30,13 +31,13 @@ const ptnKeyFromScript = scriptData?.ptn_key || scriptData?.roam_key;
 const updateExistingCustomer = async (ptnKey: string) =>
   await fetch(`${SERVER_URL}/customers/update`, {
     ...SHARED_FETCH_PARAMS,
-    headers: { ...SHARED_HEADERS, "x-ptn-key": ptnKey },
+    headers: { ...SHARED_HEADERS, [PTN_KEY_HEADER]: ptnKey },
   });
 
 const getSignInToken = async (ptnKey: string): Promise<string> => {
   return fetch(`${SERVER_URL}/customers/sign_in_token.json`, {
     ...SHARED_FETCH_PARAMS,
-    headers: { ...SHARED_HEADERS, "x-ptn-key": ptnKey },
+    headers: { ...SHARED_HEADERS, [PTN_KEY_HEADER]: ptnKey },
     body: JSON.stringify({
       ptnKeyJSON: JSON.stringify(ptnKey),
     }),
