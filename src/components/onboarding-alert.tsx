@@ -8,7 +8,7 @@ const OnboardingAlert = ({ onConfirm, onCancel, onClose }: any) => {
       <Alert
         cancelButtonText="bring existing ptn key"
         isOpen={true}
-        confirmButtonText="make a new one for me"
+        confirmButtonText="connect with my email"
         icon="issue-new"
         intent="primary"
         onCancel={onCancel}
@@ -17,6 +17,10 @@ const OnboardingAlert = ({ onConfirm, onCancel, onClose }: any) => {
       >
         <h3 className="bp4-heading">welcome to phonetonote</h3>
         <p className="bp4-ui-text">to use phonetonote, you need a ptn key.</p>
+        <p className="bp4-ui-text">
+          we'll email you a code to connect your account. this works for new and existing
+          phonetonote accounts.
+        </p>
       </Alert>
     </>
   );

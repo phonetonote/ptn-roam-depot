@@ -4,6 +4,8 @@ import getCurrentUserEmail from "roamjs-components/queries/getCurrentUserEmail";
 import { render as renderToast } from "roamjs-components/components/Toast";
 import getCurrentUserUid from "roamjs-components/queries/getCurrentUserUid";
 import { render as renderOnboardingAlert } from "./components/onboarding-alert";
+import { render as renderVerifyCodeDialog } from "./components/verify-code-dialog";
+import { ERROR_MESSAGES, requestCode, verifyCode } from "./onboarding";
 import { useDebounce } from "@react-hook/debounce";
 import {
   HASHTAG_KEY,
@@ -79,44 +81,37 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
       setExistingPtnKey(ptnKeyFromScript);
       updateExistingCustomer(ptnKeyFromScript);
     } else {
-      const createUserAndSetPtnKey = async (email: string, roam_id: string) => {
-        try {
-          const response = await fetch("https://app.phonetonote.com/clerk/create", {
-            method: "POST",
-            mode: "cors",
-            headers: { ...SHARED_HEADERS },
-            body: JSON.stringify({ email, roam_id }),
+      const connectWithEmail = async (email: string, roamId: string) => {
+        const requested = await requestCode(email, roamId);
+        if (!requested.ok) {
+          renderToast({
+            id: "PTN_CODE_REQUEST_FAILED",
+            content: `${ERROR_MESSAGES[requested.reason]} you can also add your ptn key in roam's phonetonote extension settings.`,
+            intent: Intent.DANGER,
           });
+          return;
+        }
 
-          const {
-            ptnKey: newPtnKey,
-            clerkId: newClerkId,
-          }: {
-            ptnKey: string | undefined;
-            clerkId: string | undefined;
-          } = await response.json();
-
-          if (newPtnKey && newClerkId) {
+        renderVerifyCodeDialog({
+          email,
+          onVerify: (code) => verifyCode(email, code, roamId),
+          onResend: () => requestCode(email, roamId),
+          onVerified: ({ ptnKey: newPtnKey, clerkId: newClerkId }) => {
             setClerkIdFromRoam(newClerkId);
             setExistingPtnKey(newPtnKey);
-          } else {
-            throw new Error("No ptnKey returned from server");
-          }
-        } catch (e) {
-          console.log("ptn error creating new user:", e);
-        }
+            renderToast({
+              id: "PTN_KEY_CONNECTED",
+              content:
+                "🙌 phonetonote is connected. click the ptn dash link in the left sidebar to get started",
+              intent: Intent.SUCCESS,
+            });
+          },
+        });
       };
 
       renderOnboardingAlert({
         onConfirm: () => {
-          createUserAndSetPtnKey(getCurrentUserEmail(), getCurrentUserUid()).then(() => {
-            renderToast({
-              id: "NEW_PTN_KEY_CREATED",
-              content:
-                "🙌 new ptn key created, thanks for joining phonetonote. click the ptn dash link in the left sidebar to get started",
-              intent: Intent.SUCCESS,
-            });
-          });
+          connectWithEmail(getCurrentUserEmail(), getCurrentUserUid());
         },
         onCancel: () => {
           renderToast({

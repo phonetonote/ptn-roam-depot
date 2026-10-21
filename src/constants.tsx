@@ -1,6 +1,8 @@
 import { InputType, PTNDefaultSettings, PTNSettings } from "./types";
 
-export const SERVER_URL = "https://app.phonetonote.com";
+// Set at build time by esbuild.config.mjs.
+declare const PTN_SERVER_URL: string;
+export const SERVER_URL = PTN_SERVER_URL;
 export const MEDIA_URL = "https://ptn-telegram-attachments.ptn.computer/";
 export const PARENT_BLOCK_KEY = "parentBlockTitle";
 export const PARENT_BLOCK_TITLE = "parent block title";

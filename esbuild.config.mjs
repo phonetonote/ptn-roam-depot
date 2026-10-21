@@ -48,6 +48,7 @@ const buildOptions = {
   plugins: [roamExternalsPlugin],
   define: {
     "process.env.NODE_ENV": '"production"',
+    PTN_SERVER_URL: JSON.stringify("https://app.phonetonote.com"),
   },
   loader: {
     ".css": "text",
