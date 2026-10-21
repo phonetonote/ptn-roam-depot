@@ -4,6 +4,8 @@ import { InputType, PTNDefaultSettings, PTNSettings } from "./types";
 declare const PTN_SERVER_URL: string;
 export const SERVER_URL = PTN_SERVER_URL;
 export const PTN_KEY_HEADER = "x-ptn-key";
+// The server issues dashboard sign-in tokens that expire after 15 minutes.
+export const SIGN_IN_TOKEN_REFRESH_MS = 10 * 60 * 1000;
 export const MEDIA_URL = "https://ptn-telegram-attachments.ptn.computer/";
 export const PARENT_BLOCK_KEY = "parentBlockTitle";
 export const PARENT_BLOCK_TITLE = "parent block title";

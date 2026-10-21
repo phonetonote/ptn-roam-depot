@@ -18,6 +18,7 @@ import {
   ROOT_ID,
   PTN_KEY_HEADER,
   SERVER_URL,
+  SIGN_IN_TOKEN_REFRESH_MS,
   SHARED_HEADERS,
   SHARED_FETCH_PARAMS,
 } from "./constants";
@@ -273,10 +274,33 @@ const Singleton = ({ extensionAPI }: SingletonProps) => {
     }
   }, [liveSettings, ptnKey]);
 
+  // The dashboard link's sign-in token expires after 15 minutes, so keep it fresh while the tab
+  // is visible, and refresh as soon as a tab comes back (after sleep or hours in the background).
   React.useEffect(() => {
-    if (ptnKey && ptnKey !== BRING_YOUR_OWN_PTN_KEY) {
-      setSignInTokenAsync(ptnKey);
+    if (!ptnKey || ptnKey === BRING_YOUR_OWN_PTN_KEY) {
+      return;
     }
+
+    let fetchedAt = 0;
+    const refresh = () => {
+      fetchedAt = Date.now();
+      setSignInTokenAsync(ptnKey);
+    };
+    const refreshIfStale = () => {
+      const isStale = Date.now() - fetchedAt >= SIGN_IN_TOKEN_REFRESH_MS;
+      if (document.visibilityState === "visible" && isStale) {
+        refresh();
+      }
+    };
+
+    refresh();
+    const intervalId = window.setInterval(refreshIfStale, SIGN_IN_TOKEN_REFRESH_MS);
+    document.addEventListener("visibilitychange", refreshIfStale);
+
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener("visibilitychange", refreshIfStale);
+    };
   }, [ptnKey]);
 
   const clerkIdFromRoamString = clerkIdFromRoam || "null";
